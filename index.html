@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Searchable cooking times for frozen foods from grocery stores, Costco and drugstores, scaled to quantity and cooking method.">
+<title>Back of the Box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Fraunces:ital,opsz,wght@0,9..144,600..900;1,9..144,600..900&display=swap">
+<style>
+/* Layout: search rail on the left, "back of the package" instruction panels on the right; stacks on phones.
+   Look: retro stand-mixer. Glossy enamel red, porcelain countertop, brushed-chrome trim; each method is an enamel finish. */
+:root {
+  --bg: #F3EEE6;
+  --surface: #FFFDF9;
+  --ink: #2A2321;
+  --muted: #6E6460;
+  --line: #E2D9CE;
+  --accent: #B3121D;
+  --accent-soft: #F5E1DD;
+  --on-ink: #FFFFFF;
+  --on-pop: #FFFFFF;
+  --heat: #B3121D;
+  --warn-bg: #FBEDE9;
+  --hdr: #B3121D;
+  --hdr-ink: #FBF3E8;
+  --pop: #FBF3E8;
+  --steel-hi: #FAFBFC; --steel-mid: #C3C8CE; --steel-lo: #8A9099;
+  --m-mw: #B3121D; --m-ov: #B9502C; --m-cv: #93461F; --m-to: #8C6A2A; --m-af: #2F6B5C; --m-sk: #7A1F2B; --m-bo: #2C4F7C;
+  --m-st: #3F6F7E; --m-df: #9A6A12; --m-tt: #5B2A4A; --m-gr: #3B3B3E; --m-pc: #5A6B2E; --m-sc: #7A4E35; --m-tw: #4F6B8C;
+  --font: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #191513; --surface: #241F1C; --ink: #F2EBE3; --muted: #B2A79E; --line: #3B332E;
+    --accent: #E0453C; --accent-soft: #3B1F1C; --on-ink: #191513; --heat: #F06A5F; --warn-bg: #2C1C1A;
+    --hdr: #9E1019; --hdr-ink: #FBF3E8; --pop: #FBF3E8;
+    --steel-hi: #7A8088; --steel-mid: #4A4F56; --steel-lo: #2A2D31;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #191513; --surface: #241F1C; --ink: #F2EBE3; --muted: #B2A79E; --line: #3B332E;
+  --accent: #E0453C; --accent-soft: #3B1F1C; --on-ink: #191513; --heat: #F06A5F; --warn-bg: #2C1C1A;
+  --hdr: #9E1019; --hdr-ink: #FBF3E8; --pop: #FBF3E8;
+  --steel-hi: #7A8088; --steel-mid: #4A4F56; --steel-lo: #2A2D31;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.top { padding-block: 30px 30px; color: var(--hdr-ink); position: relative;
+  background: linear-gradient(180deg, rgba(255,255,255,.22) 0, rgba(255,255,255,0) 38%, rgba(0,0,0,0) 70%, rgba(0,0,0,.18) 100%), var(--hdr); }
+.top::after { content: ""; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px;
+  background: linear-gradient(180deg, var(--steel-hi) 0, var(--steel-mid) 45%, var(--steel-lo) 100%); box-shadow: 0 3px 6px rgba(0,0,0,.18); }
+.eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink);
+  background: linear-gradient(180deg, var(--steel-hi), var(--steel-mid)); padding: 4px 12px; border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 1px 2px rgba(0,0,0,.25); }
+h1 { margin: 12px 0 8px; font-family: var(--display); font-style: italic; font-weight: 800; font-variation-settings: "opsz" 144; font-size: clamp(46px, 8vw, 80px); line-height: .95; letter-spacing: -.02em; text-wrap: balance; color: var(--pop); text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.sub { margin: 0 0 20px; color: var(--hdr-ink); opacity: .9; max-width: 62ch; }
+.search { display: flex; align-items: center; gap: 10px; border: 0; background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 6px 5px 18px; max-width: 720px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.12), 0 0 0 4px var(--steel-mid), 0 6px 14px rgba(0,0,0,.25); }
+.search:focus-within { outline: 3px solid var(--hdr-ink); outline-offset: 6px; }
+.search svg { flex: none; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 10px 0; font-size: 18px; outline: none; }
+.clear { border: 0; background: transparent; padding: 8px 10px; cursor: pointer; color: var(--muted); font-weight: 600; }
+
+.grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 28px; padding-block: 36px 40px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+label.small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+select, .qty input { width: 100%; border: 1.5px solid var(--line); background: var(--surface); padding: 9px 10px; border-radius: 4px; }
+select { cursor: pointer; }
+.count { font-size: 13px; color: var(--muted); margin: 6px 0 8px; font-variant-numeric: tabular-nums; }
+.results { list-style: none; margin: 0; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; max-height: 68vh; overflow-y: auto; box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 4px 14px rgba(60,30,20,.08); }
+.results li button { border-radius: 8px; }
+@media (max-width: 860px) { .results { max-height: 42vh; } }
+.results li button { width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 8px; border: 0; border-bottom: 1px solid var(--line); background: transparent; cursor: pointer; }
+.results li button:hover { background: var(--accent-soft); }
+.results li button[aria-current="true"] { background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,0) 50%), var(--hdr); color: #FFFFFF; }
+.results li:last-child button { border-bottom: 0; }
+.results li button[aria-current="true"] .cat { color: inherit; opacity: .75; }
+.rname { font-weight: 600; min-width: 0; }
+.cat { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.rb { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 1px; }
+.results li button[aria-current="true"] .rb { color: inherit; opacity: .8; }
+.brands { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -6px 0 18px; }
+.brands .small { width: 100%; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.brand { font-size: 13px; font-weight: 700; padding: 4px 11px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); border: 1px solid var(--line); }
+.bnote { width: 100%; font-size: 12px; color: var(--muted); }
+.empty { padding: 18px 8px; color: var(--muted); }
+
+.detail { min-width: 0; }
+.ptitle { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.ptitle h2 { margin: 0; font-stretch: 78%; font-weight: 800; font-size: clamp(26px, 4vw, 36px); line-height: 1.05; text-wrap: balance; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 18px; }
+.tag { font-size: 12px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--surface); }
+.tag.cat-tag { border-color: var(--hdr); background: var(--hdr); color: #FFFFFF; font-weight: 700; }
+
+.controls { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) minmax(0, .9fr); gap: 12px; padding: 16px; border-radius: 18px; margin-bottom: 26px;
+  background: linear-gradient(180deg, var(--steel-hi), var(--steel-mid)); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 4px 12px rgba(0,0,0,.15); }
+.controls label.small { color: var(--ink); }
+.ptitle h2 { font-family: var(--display); font-weight: 800; font-stretch: normal; }
+@media (max-width: 620px) { .controls { grid-template-columns: minmax(0, 1fr); } }
+.qty { display: flex; align-items: stretch; gap: 0; }
+.qty button { flex: none; width: 40px; border: 1.5px solid var(--hdr); background: linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,0) 55%), var(--hdr); color: #FFFFFF; cursor: pointer; font-size: 18px; font-weight: 800; }
+.qty button:hover { filter: brightness(1.1); }
+.qty button:first-child { border-radius: 4px 0 0 4px; border-right: 0; }
+.qty button.plus { border-radius: 0; border-left: 0; }
+.qty input { border-radius: 0; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; min-width: 0; -moz-appearance: textfield; }
+.qty input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.unit { display: flex; align-items: center; padding: 0 10px; border: 1.5px solid var(--line); border-left: 0; border-radius: 0 4px 4px 0; background: var(--bg); font-size: 13px; color: var(--muted); white-space: nowrap; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 22px; padding-right: 6px; }
+.card { --mc: var(--accent); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--surface); display: flex; flex-direction: column; box-shadow: 0 6px 18px rgba(60,30,20,.10); transition: transform .15s ease, box-shadow .15s ease; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(60,30,20,.16); }
+@media (prefers-reduced-motion: reduce) { .card, .card:hover { transition: none; transform: none; } }
+.card-h { background: linear-gradient(180deg, rgba(255,255,255,.28) 0, rgba(255,255,255,.04) 48%, rgba(0,0,0,0) 52%, rgba(0,0,0,.14) 100%), var(--mc); color: var(--on-pop); display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 4px solid var(--steel-mid); }
+.card-h h3 { font-family: var(--display); font-style: italic; font-weight: 700; font-stretch: normal; text-transform: none; letter-spacing: 0; font-size: 21px; }
+.card-h .setting { background: linear-gradient(180deg, var(--steel-hi), var(--steel-mid)); color: #2A2321; padding: 3px 11px; border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 1px 2px rgba(0,0,0,.3); }
+.time strong { color: var(--ink); }
+.steps li::marker { color: var(--mc); font-weight: 800; }
+.card-h h3 { margin: 0; line-height: 1.1; }
+.setting { font-weight: 800; font-variant-numeric: tabular-nums; font-size: 15px; white-space: nowrap; }
+.card-b { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.time { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.time strong { font-stretch: 75%; font-weight: 800; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.time span { font-size: 13px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
+.chip.heat { background: transparent; border: 1.5px solid var(--heat); color: var(--heat); }
+.steps { margin: 0; padding-left: 20px; display: grid; gap: 5px; }
+.steps li { padding-left: 2px; }
+.done { margin-top: auto; padding-top: 10px; border-top: 1.5px dashed var(--line); font-size: 13px; font-weight: 700; }
+.done.temp { color: var(--heat); }
+.derived { font-size: 12px; color: var(--muted); }
+
+.notice { border: 1.5px solid var(--heat); border-radius: 18px; background: var(--warn-bg); padding: 14px 16px; margin-bottom: 16px; }
+.notice h3 { margin: 0 0 4px; font-size: 16px; }
+.notice p { margin: 0 0 10px; }
+.alts { display: flex; flex-wrap: wrap; gap: 6px; }
+.alts button { border: 0; background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 55%), var(--mc, var(--accent)); color: var(--on-pop); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-weight: 700; font-size: 13px; }
+.alts button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+.foot { border-top: 1.5px solid var(--line); padding-block: 18px 32px; color: var(--muted); font-size: 13px; }
+.foot p { max-width: 80ch; margin: 0 0 6px; }
+</style>
+
+<style>html,body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Frozen food cooking times</div>
+    <h1>Back of the Box</h1>
+    <p class="sub" id="sub">Look up a frozen item, set how much you're making and how you're heating it, and get times scaled to that amount.</p>
+    <div class="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"></circle><path d="M16 16l5 5"></path></svg>
+      <input id="q" type="search" placeholder="Search: nuggets, pot pie, tater tots, dumplings…" autocomplete="off" aria-label="Search frozen foods">
+      <button class="clear" id="clear" type="button" hidden>Clear</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap grid">
+  <aside>
+    <div class="filters">
+      <div>
+        <label class="small" for="cat">Aisle</label>
+        <select id="cat"></select>
+      </div>
+      <div>
+        <label class="small" for="store">Store</label>
+        <select id="store">
+          <option value="">All stores</option>
+          <option value="g">Safeway / Vons</option>
+          <option value="n">Whole Foods / Sprouts</option>
+          <option value="d">CVS / Walgreens</option>
+          <option value="c">Costco</option>
+        </select>
+      </div>
+    </div>
+    <div class="count" id="count"></div>
+    <ul class="results" id="results"></ul>
+  </aside>
+
+  <section class="detail" id="detail" aria-live="polite"></section>
+</main>
+
+<footer class="wrap foot">
+  <p>Times are typical ranges compiled from common package directions for each product type. Brands, package sizes and appliances differ, so start checking at the low end and follow your own package when it disagrees.</p>
+  <p>Meat, poultry, seafood and egg items are done at the internal temperature shown on each card, checked with a food thermometer in the thickest part.</p>
+</footer>
+
+<script>
+/* Method tuple: [setting, minLow, minHigh, extraMinPerUnitAboveBase, capacityPerBatch, note] */
+var METHODS = [
+  ["mw", "Microwave"], ["ov", "Oven (conventional)"], ["cv", "Convection oven"], ["to", "Toaster oven"],
+  ["af", "Air fryer"], ["sk", "Stovetop: skillet / sauté"], ["bo", "Stovetop: boil / simmer"], ["st", "Steamer"],
+  ["df", "Deep fryer"], ["tt", "Pop-up toaster"], ["gr", "Grill"], ["pc", "Pressure cooker (Instant Pot)"],
+  ["sc", "Slow cooker"], ["tw", "Thaw / soften (no heat)"]
+];
+var MNAME = {}; METHODS.forEach(function (m) { MNAME[m[0]] = m[1]; });
+var STORES = { g: "Safeway / Vons", n: "Whole Foods / Sprouts", d: "CVS / Walgreens", c: "Costco" };
+/* Existing items Costco commonly stocks (often as bulk packs or Kirkland Signature). */
+var COSTCO = ["Thin-crust pizza (12 in.)", "Rising-crust pizza (12 in.)", "Pizza rolls", "Mini bagel pizzas", "Lasagna, family size (38–40 oz)",
+  "Orange chicken", "Fried rice (bag)", "Lo mein / stir-fry noodles (bag)", "Indian curry meal", "Bean & cheese burrito", "Breakfast burrito",
+  "Stuffed sandwich pocket", "Taquitos", "Corn dogs", "Tamales", "PB&J crustless sandwich", "Frozen waffles", "Breakfast sandwich",
+  "Sausage links (fully cooked)", "Egg bites", "Bagels (frozen)", "Chicken nuggets (breaded)", "Chicken tenders / strips (breaded)",
+  "Chicken wings (fully cooked, sauced)", "Chicken breasts (raw, boneless)", "Grilled chicken strips (fully cooked)", "Shrimp (raw, peeled)",
+  "Shrimp (cooked, cocktail)", "Coconut shrimp", "Crab cakes", "Salmon fillets (raw)", "White fish fillets (raw)", "Beef burger patties (raw, ¼ lb)",
+  "Meatballs (fully cooked)", "Mozzarella sticks", "Egg rolls", "Potstickers / gyoza", "Soup dumplings", "Spanakopita", "Churros", "Soft pretzels",
+  "French fries (straight cut)", "Sweet potato fries", "Tater tots", "Broccoli florets", "Stir-fry vegetable blend", "Mixed vegetables", "Green beans",
+  "Edamame (in pods)", "Mixed berries", "Mango or pineapple chunks", "Acai or pitaya packs", "Ice cream bars & sandwiches", "Mochi ice cream",
+  "Cheesecake", "Cookie dough (pre-portioned)", "Veggie burger patties"];
+/* Common brands sold under each item. Items not listed are mostly store brands. */
+var BRANDS = {
+  "Thin-crust pizza (12 in.)": "Red Baron, Tombstone, Totino's Party Pizza, Freschetta, Newman's Own, Kirkland Signature",
+  "Rising-crust pizza (12 in.)": "DiGiorno, Red Baron Deep Dish, Freschetta Naturally Rising",
+  "Cauliflower-crust pizza": "Caulipower, Milton's",
+  "Gluten-free pizza": "Udi's, Against the Grain, Amy's",
+  "Personal pan pizza (6–8 in.)": "Red Baron Singles, Celeste Pizza for One, Amy's",
+  "French bread pizza": "Stouffer's, Red Baron",
+  "Pizza rolls": "Totino's",
+  "Mini bagel pizzas": "Bagel Bites",
+  "Flatbread pizza": "Stonefire",
+  "Single-serve frozen dinner": "Lean Cuisine, Healthy Choice, Banquet, Hungry-Man, Marie Callender's, Stouffer's, Smart Ones",
+  "Rice or noodle bowl": "Healthy Choice Power Bowls, Amy's, Lean Cuisine, Evol, Sweet Earth, Saffron Road",
+  "Lasagna, single serve (10 oz)": "Stouffer's, Michelina's, Amy's, Lean Cuisine",
+  "Lasagna, family size (38–40 oz)": "Stouffer's, Michael Angelo's",
+  "Macaroni & cheese, single serve": "Stouffer's, Amy's, Banquet, Lean Cuisine",
+  "Macaroni & cheese, family size": "Stouffer's",
+  "Chicken pot pie (10 oz)": "Marie Callender's, Banquet, Stouffer's, Swanson",
+  "Shepherd's pie": "Amy's",
+  "Enchiladas (tray)": "Amy's, El Monterey",
+  "Stuffed peppers": "Stouffer's",
+  "Skillet meal (24 oz bag)": "Bertolli, Marie Callender's Skillet Meals, Birds Eye Voila!",
+  "Orange chicken": "P.F. Chang's Home Menu, Tai Pei, InnovAsian",
+  "Fried rice (bag)": "Ajinomoto, Tai Pei, InnovAsian",
+  "Lo mein / stir-fry noodles (bag)": "Ajinomoto Yakisoba, P.F. Chang's Home Menu, InnovAsian",
+  "Indian curry meal": "Deep Indian Kitchen, Saffron Road, Amy's",
+  "Frozen soup": "Tabatchnick, Kettle Cuisine",
+  "Bean & cheese burrito": "El Monterey, Amy's, Red's, Don Miguel",
+  "Breakfast burrito": "El Monterey, Jimmy Dean, Red's, Sweet Earth",
+  "Stuffed sandwich pocket": "Hot Pockets",
+  "Chimichanga": "El Monterey, Don Miguel",
+  "Taquitos": "Delimex, José Olé, El Monterey",
+  "Corn dogs": "State Fair, Foster Farms",
+  "Mini corn dogs": "State Fair, Foster Farms",
+  "Microwave cheeseburgers": "White Castle, Big AZ",
+  "Pigs in a blanket": "Hebrew National, Nathan's Famous",
+  "Empanadas": "Goya",
+  "Tamales": "Del Real Foods, El Monterey",
+  "Quesadillas": "El Monterey, José Olé",
+  "PB&J crustless sandwich": "Smucker's Uncrustables",
+  "Frozen waffles": "Eggo, Kodiak, Van's",
+  "Frozen pancakes": "Eggo, Jimmy Dean",
+  "Breakfast sandwich": "Jimmy Dean",
+  "Breakfast bowl": "Jimmy Dean",
+  "Sausage links (fully cooked)": "Jimmy Dean, Johnsonville, Banquet Brown 'N Serve",
+  "Sausage patties (fully cooked)": "Jimmy Dean, Banquet Brown 'N Serve",
+  "Hash brown patties": "Ore-Ida",
+  "Shredded hash browns (bag)": "Ore-Ida",
+  "Toaster pastries (frozen)": "Pillsbury Toaster Strudel",
+  "Biscuits (frozen, unbaked)": "Pillsbury Grands!",
+  "Bagels (frozen)": "Lender's",
+  "Chicken nuggets (breaded)": "Tyson, Perdue, Just Bare, Applegate, Bell & Evans",
+  "Chicken tenders / strips (breaded)": "Tyson, Perdue, Bell & Evans",
+  "Popcorn chicken": "Tyson",
+  "Chicken wings (fully cooked, sauced)": "Tyson Any'tizers, Foster Farms Take Out",
+  "Chicken wings (raw)": "Kirkland Signature",
+  "Boneless wings (breaded)": "Tyson, Foster Farms",
+  "Chicken breasts (raw, boneless)": "Kirkland Signature, Tyson",
+  "Grilled chicken strips (fully cooked)": "Tyson Grilled & Ready",
+  "Breaded chicken patties": "Tyson",
+  "Stuffed chicken breast (raw)": "Barber Foods",
+  "Breaded fish fillets": "Gorton's, Van de Kamp's",
+  "Fish sticks": "Gorton's, Van de Kamp's",
+  "Shrimp (raw, peeled)": "Kirkland Signature",
+  "Shrimp (cooked, cocktail)": "Kirkland Signature",
+  "Breaded shrimp": "SeaPak",
+  "Coconut shrimp": "SeaPak",
+  "Salmon fillets (raw)": "Kirkland Signature, Trident Seafoods",
+  "White fish fillets (raw)": "Kirkland Signature, Trident Seafoods",
+  "Crab cakes": "Phillips",
+  "Beef burger patties (raw, ¼ lb)": "Kirkland Signature, Ball Park",
+  "Turkey burgers (raw)": "Butterball",
+  "Meatballs (fully cooked)": "Cooked Perfect, Rosina, Kirkland Signature",
+  "Mozzarella sticks": "Farm Rich, TGI Fridays",
+  "Jalapeño poppers": "TGI Fridays",
+  "Onion rings": "Alexia",
+  "Egg rolls": "Chung's, Tai Pei, InnovAsian",
+  "Potstickers / gyoza": "Bibigo, Ling Ling, InnovAsian",
+  "Soup dumplings": "Bibigo",
+  "Samosas": "Deep Indian Kitchen",
+  "Soft pretzels": "SuperPretzel, Auntie Anne's",
+  "Potato skins": "TGI Fridays",
+  "Spinach artichoke dip": "TGI Fridays",
+  "French fries (straight cut)": "Ore-Ida, Alexia, McCain",
+  "Crinkle-cut fries": "Ore-Ida Golden Crinkles, McCain",
+  "Shoestring fries": "Ore-Ida",
+  "Waffle fries": "Ore-Ida, Alexia",
+  "Sweet potato fries": "Alexia, Ore-Ida",
+  "Curly fries": "Arby's",
+  "Steak fries / potato wedges": "Ore-Ida",
+  "Tater tots": "Ore-Ida",
+  "Mashed potatoes": "Ore-Ida Steam n' Mash",
+  "Steam-in-bag vegetables": "Birds Eye Steamfresh, Green Giant",
+  "Broccoli florets": "Birds Eye, Green Giant, Kirkland Signature",
+  "Cauliflower florets": "Birds Eye, Green Giant",
+  "Green beans": "Birds Eye, Green Giant",
+  "Peas": "Birds Eye, Green Giant",
+  "Corn kernels": "Birds Eye, Green Giant",
+  "Mixed vegetables": "Birds Eye, Green Giant, Kirkland Signature",
+  "Stir-fry vegetable blend": "Birds Eye, Kirkland Signature",
+  "Brussels sprouts": "Birds Eye, Green Giant",
+  "Chopped spinach (10 oz box)": "Birds Eye, Green Giant",
+  "Edamame (in pods)": "Seapoint Farms",
+  "Riced cauliflower": "Green Giant Riced Veggies, Birds Eye",
+  "Butternut squash cubes": "Birds Eye",
+  "Pepper & onion strips": "Birds Eye",
+  "Carrots (sliced)": "Birds Eye",
+  "Asparagus spears": "Green Giant",
+  "Corn on the cob": "Green Giant",
+  "Breaded okra": "McKenzie's",
+  "Mixed berries": "Wyman's, Dole, Kirkland Signature",
+  "Mango or pineapple chunks": "Dole, Kirkland Signature",
+  "Acai or pitaya packs": "Sambazon, Pitaya Foods",
+  "Garlic bread (loaf halves)": "Pepperidge Farm, New York Bakery",
+  "Texas toast": "New York Bakery, Pepperidge Farm",
+  "Dinner rolls (frozen dough)": "Rhodes",
+  "Puff pastry sheets": "Pepperidge Farm, Dufour",
+  "Pie crust shells": "Marie Callender's, Pillsbury, Wholly Wholesome",
+  "Naan": "Deep Indian Kitchen",
+  "Ice cream (to soften)": "Ben & Jerry's, Häagen-Dazs, Tillamook, Breyers, Halo Top",
+  "Ice cream bars & sandwiches": "Klondike, Drumstick, Kirkland Signature",
+  "Mochi ice cream": "My/Mo, Bubbies",
+  "Fruit pie (unbaked, 9 in.)": "Marie Callender's, Mrs. Smith's",
+  "Cream pie": "Edwards, Marie Callender's",
+  "Cheesecake": "Sara Lee",
+  "Cookie dough (pre-portioned)": "Otis Spunkmeyer, Immaculate Baking",
+  "Churros": "Tio Pepe's",
+  "Whipped topping": "Cool Whip, So Delicious CocoWhip",
+  "Veggie burger patties": "MorningStar Farms, Beyond Meat, Impossible, Dr. Praeger's, Boca",
+  "Plant-based nuggets": "MorningStar Farms, Impossible, Gardein",
+  "Meatless crumbles": "MorningStar Farms, Gardein, Boca",
+  "Chicken bakes": "Kirkland Signature",
+  "Take-and-bake pizza (18 in.)": "Kirkland Signature (Costco deli)",
+  "Korean beef bulgogi": "Bibigo",
+  "Ahi tuna steaks": "Kirkland Signature",
+  "Lobster tails (raw)": "Kirkland Signature",
+  "Crab legs (pre-cooked)": "Kirkland Signature",
+  "Sea scallops (raw)": "Kirkland Signature"
+};
+var PREHEAT = { ov: 10, cv: 10, to: 5, af: 3, df: 10, gr: 10, bo: 8, st: 5, pc: 10 };
+
+function veg(n, k, o, extra) {
+  var m = {
+    mw: ["High", 5, 7, 0.2, 24, "Covered microwave-safe dish with 2 tbsp water. Stir halfway, then drain."],
+    st: ["Steam", 5, 7, 0, 24, "Covered, in a basket over boiling water."],
+    bo: ["Boil", 4, 6, 0, 32, "Add to salted boiling water, return to a boil, then start timing. Drain."],
+    sk: ["Medium-high", 7, 9, 0.15, 16, "1 tbsp oil or butter. Stir until the ice water cooks off and edges brown."],
+    ov: [425, 20, 25, 0, 24, "Toss with 1 tbsp oil per 12 oz and spread on a preheated sheet. Flip halfway."],
+    af: [400, 10, 14, 0, 12, "Toss with 1 tsp oil. Shake the basket halfway."]
+  };
+  o = o || {};
+  Object.keys(o).forEach(function (key) { if (o[key] === null) delete m[key]; else m[key] = o[key]; });
+  var p = { n: n, c: "Vegetables", u: "oz", q: 12, s: 2, k: k, w: "gnd", m: m };
+  if (extra) Object.keys(extra).forEach(function (key) { p[key] = extra[key]; });
+  return p;
+}
+
+var P = [
+  /* ---------- Pizza ---------- */
+  { n: "Thin-crust pizza (12 in.)", c: "Pizza", u: "pizza", q: 1, k: "frozen pizza pepperoni cheese supreme sausage thin crispy tombstone red baron totino's party pizza", w: "gnd", x: "to",
+    m: { ov: [425, 12, 15, 1, 2, "Place directly on the center rack for a crisp crust, or on a baking sheet for a softer one."] },
+    no: { mw: "A full-size crust turns soggy and heats unevenly in the microwave.", af: "A 12-inch pizza won't fit most air fryer baskets. Try a personal pan pizza instead." } },
+  { n: "Rising-crust pizza (12 in.)", c: "Pizza", u: "pizza", q: 1, k: "digiorno self rising thick crust deep dish pan pizza", w: "gnd", x: "to",
+    m: { ov: [400, 22, 26, 2, 2, "Bake directly on the center rack. Done when cheese is melted and edges are golden."] },
+    no: { mw: "Rising crust needs dry oven heat to rise and bake through.", af: "Too large for an air fryer basket." } },
+  { n: "Cauliflower-crust pizza", c: "Pizza", u: "pizza", q: 1, k: "gluten free veggie crust low carb caulipower keto", w: "gn",
+    m: { ov: [425, 13, 16, 1, 2, "Bake on the center rack or a preheated sheet for a crisper bottom."], af: [375, 8, 10, 0, 1, "Personal 7–8 in. size only."] } },
+  { n: "Gluten-free pizza", c: "Pizza", u: "pizza", q: 1, k: "gf pizza rice crust udi's against the grain", w: "gn",
+    m: { ov: [425, 14, 17, 1, 2, "Directly on the rack. Gluten-free crusts brown slowly, so judge by melted cheese."] } },
+  { n: "Personal pan pizza (6–8 in.)", c: "Pizza", u: "pizza", q: 1, k: "single serve personal mini pizza for one singles", w: "gnd",
+    m: { mw: ["High", 2.5, 3.5, 1.5, 2, "Use the crisping tray if one is included."], ov: [400, 15, 18, 0, 4, "Directly on the rack."], af: [375, 8, 10, 0, 1, ""] } },
+  { n: "French bread pizza", c: "Pizza", u: "piece", q: 1, k: "stouffer's french bread pepperoni deluxe", w: "gnd",
+    m: { mw: ["High", 2, 2.5, 1.5, 2, "On a paper towel. Don't stack pieces."], ov: [375, 22, 25, 0, 6, "On a baking sheet."], af: [350, 9, 11, 0, 2, ""] } },
+  { n: "Pizza rolls", c: "Pizza", u: "roll", q: 6, k: "totino's pizza bites snacks pepperoni combination", w: "gnd",
+    m: { mw: ["High", 1, 1, 0.1, 15, "Single layer on a plate. Filling gets very hot."], ov: [425, 12, 14, 0, 40, "Single layer on a baking sheet."], af: [380, 6, 8, 0, 20, "Shake the basket halfway."] } },
+  { n: "Mini bagel pizzas", c: "Pizza", u: "bagel", q: 4, k: "bagel bites pizza snacks cheese pepperoni", w: "gnd",
+    m: { mw: ["High", 0.75, 1, 0.15, 9, "Arrange in a circle on a plate."], ov: [425, 12, 14, 0, 36, "Single layer on a baking sheet."], af: [375, 5, 6, 0, 12, ""] } },
+  { n: "Flatbread pizza", c: "Pizza", u: "flatbread", q: 1, k: "naan pizza flatbread margherita", w: "gn",
+    m: { ov: [400, 10, 12, 1, 2, "Directly on the rack."], af: [375, 6, 8, 0, 1, "If it fits flat in your basket."] } },
+
+  /* ---------- Meals & bowls ---------- */
+  { n: "Single-serve frozen dinner", c: "Meals & bowls", u: "tray", q: 1, k: "tv dinner lean cuisine healthy choice banquet hungry man smart ones salisbury steak meatloaf turkey dinner entree", w: "gnd", d: 165,
+    m: { mw: ["High", 4, 6, 3, 2, "Cut a slit in the film to vent. If the tray has a sauce section, stir or rotate halfway."], ov: [350, 30, 40, 3, 6, "Only if the tray says oven-safe. Remove film, cover with foil, set on a sheet."] } },
+  { n: "Rice or noodle bowl", c: "Meals & bowls", u: "bowl", q: 1, k: "frozen bowl teriyaki chicken alfredo burrito bowl power bowl amy's sweet earth pad thai", w: "gnd", d: 165,
+    m: { mw: ["High", 3, 4, 2.5, 2, "Peel the film back at one corner. Stir halfway, re-cover and finish."] },
+    no: { ov: "Bowl trays are usually plastic and not oven-safe." } },
+  { n: "Lasagna, single serve (10 oz)", c: "Meals & bowls", u: "tray", q: 1, k: "stouffer's lasagna meat sauce italian", w: "gnd", d: 165,
+    m: { mw: ["High", 6, 8, 3.5, 2, "Vent film. Cook 4 min, rest 1 min, then finish."], ov: [375, 45, 50, 3, 6, "Remove film, cover with foil, set on a baking sheet."] } },
+  { n: "Lasagna, family size (38–40 oz)", c: "Meals & bowls", u: "tray", q: 1, k: "party size lasagna large family stouffer's", w: "gn", d: 165, x: "to",
+    m: { ov: [375, 70, 80, 10, 2, "Cover with foil and set on a sheet. Uncover for the last 10 min. Rest 10 min before slicing."], mw: ["50%", 18, 22, 0, 1, "Only if the tray is labeled microwave-safe. Rotate every 6 min."] } },
+  { n: "Macaroni & cheese, single serve", c: "Meals & bowls", u: "tray", q: 1, k: "mac and cheese mac n cheese stouffer's amy's kraft", w: "gnd",
+    m: { mw: ["High", 3.5, 4.5, 2.5, 2, "Vent film. Stir after 2 min, then finish."], ov: [375, 30, 35, 0, 6, "Remove film. Set on a baking sheet."] } },
+  { n: "Macaroni & cheese, family size", c: "Meals & bowls", u: "tray", q: 1, k: "mac and cheese party size large", w: "gn", x: "to",
+    m: { ov: [375, 60, 65, 10, 2, "Cover with foil. Uncover for the last 10 min for a golden top."], mw: ["High", 12, 15, 0, 1, "Vent film. Stir every 4 min."] } },
+  { n: "Chicken pot pie (10 oz)", c: "Meals & bowls", u: "pie", q: 1, k: "marie callender's banquet pot pie turkey beef", w: "gnd", d: 165,
+    m: { ov: [400, 45, 50, 2, 6, "Cut 4 small slits in the crust and bake on a baking sheet. Rest 5 min."], mw: ["High", 6, 8, 3.5, 2, "The crust stays pale and soft."], af: [350, 25, 30, 0, 2, "Cover the crust with foil for the first 15 min if it browns fast."] } },
+  { n: "Shepherd's pie", c: "Meals & bowls", u: "tray", q: 1, k: "cottage pie mashed potato beef", w: "gn", d: 165,
+    m: { ov: [375, 45, 55, 3, 4, "Cover with foil. Uncover for the last 10 min to brown the potatoes."], mw: ["High", 7, 9, 3.5, 2, "Vent film. Rotate halfway."] } },
+  { n: "Enchiladas (tray)", c: "Meals & bowls", u: "tray", q: 1, k: "cheese chicken beef enchiladas mexican el monterey amy's", w: "gn", d: 165,
+    m: { ov: [375, 35, 40, 3, 4, "Cover with foil. Uncover for the last 5 min."], mw: ["High", 5, 6, 3, 2, "Vent film. Rotate halfway."] } },
+  { n: "Stuffed peppers", c: "Meals & bowls", u: "tray", q: 1, k: "stuffed bell peppers beef rice", w: "gn", d: 165,
+    m: { ov: [375, 55, 60, 5, 3, "Cover with foil. Set on a baking sheet."], mw: ["High", 10, 12, 4, 1, "Vent film. Rotate twice."] } },
+  { n: "Skillet meal (24 oz bag)", c: "Meals & bowls", u: "bag", q: 1, s: 0.5, k: "bertolli voila pasta chicken skillet dinner for two", w: "gn", d: 165,
+    m: { sk: ["Medium-high", 10, 12, 3, 1, "Add the bag to a large nonstick skillet. Cover and stir now and then. Use one 12 in. pan per bag."], mw: ["High", 9, 11, 4, 1, "Covered microwave-safe dish. Stir every 3 min."] } },
+  { n: "Orange chicken", c: "Meals & bowls", u: "bag", q: 1, s: 0.5, k: "trader joe's orange chicken general tso mandarin sesame chicken chinese", w: "gn", d: 165,
+    m: { ov: [400, 15, 18, 2, 2, "Spread chicken on a sheet. Warm the sauce pouch in a bowl of hot water meanwhile, then toss."], af: [400, 10, 12, 0, 0.5, "Chicken only, shake halfway. Toss with warmed sauce."], sk: ["Medium-high", 8, 10, 2, 1, "1 tbsp oil. Cook chicken until crisp, add sauce, stir 1 min."], mw: ["High", 3.5, 4.5, 2, 1, "Coating stays soft."] } },
+  { n: "Fried rice (bag)", c: "Meals & bowls", u: "bag", q: 1, s: 0.5, k: "chicken fried rice vegetable fried rice shrimp pork pf chang's", w: "gnd", d: 165,
+    m: { sk: ["Medium-high", 7, 9, 2, 1, "1 tbsp oil. Add rice straight from frozen and stir often."], mw: ["High", 4, 5, 2.5, 1, "Covered dish. Stir halfway."] } },
+  { n: "Lo mein / stir-fry noodles (bag)", c: "Meals & bowls", u: "bag", q: 1, s: 0.5, k: "lo mein noodles yakisoba chow mein udon stir fry", w: "gn", d: 165,
+    m: { sk: ["Medium-high", 8, 10, 2, 1, "Add contents and 2 tbsp water. Cover 3 min, then stir-fry uncovered."], mw: ["High", 5, 6, 2.5, 1, "Covered dish. Stir halfway."] } },
+  { n: "Indian curry meal", c: "Meals & bowls", u: "tray", q: 1, k: "tikka masala butter chicken palak paneer curry dal trader joe's deep", w: "gn", d: 165,
+    m: { mw: ["High", 3.5, 4.5, 2.5, 2, "Vent film. Stir the sauce halfway."], sk: ["Medium", 8, 10, 2, 2, "Empty into a covered saucepan with 2 tbsp water. Stir often."] } },
+  { n: "Frozen soup", c: "Meals & bowls", u: "cup", q: 2, s: 0.5, k: "soup block bag tomato chicken noodle lentil minestrone chili", w: "gn", d: 165,
+    m: { bo: ["Simmer", 10, 15, 1.5, 12, "Saucepan over medium, covered. Stir as it melts, then bring to a full simmer."], mw: ["High", 5, 7, 2.5, 4, "Covered bowl. Stir every 2 min."] } },
+
+  /* ---------- Burritos & handhelds ---------- */
+  { n: "Bean & cheese burrito", c: "Burritos & handhelds", u: "burrito", q: 1, k: "el monterey burrito red hot chili beef bean cheese chicken", w: "gnd", d: 165,
+    m: { mw: ["High", 1.75, 2.25, 1.5, 2, "Wrap in a paper towel. Cook 1 min, flip, then finish."], ov: [375, 25, 30, 0, 12, "Wrap in foil for a soft tortilla, or bake bare on a sheet for a crisp one."], af: [370, 12, 14, 0, 3, "Flip halfway."] } },
+  { n: "Breakfast burrito", c: "Burritos & handhelds", u: "burrito", q: 1, k: "egg sausage potato breakfast burrito", w: "gnd", d: 160,
+    m: { mw: ["High", 2, 2.5, 1.5, 2, "Wrap in a paper towel. Flip halfway."], ov: [350, 30, 35, 0, 12, "Wrap in foil."], af: [350, 12, 15, 0, 3, "Flip halfway."] } },
+  { n: "Stuffed sandwich pocket", c: "Burritos & handhelds", u: "sandwich", q: 1, k: "hot pockets lean pockets ham cheese pepperoni pizza pocket croissant crust", w: "gnd", d: 165,
+    m: { mw: ["High", 2, 2.5, 1.5, 2, "Use the crisping sleeve, on a plate. Rest 2 min. The filling is very hot."], ov: [350, 28, 30, 0, 6, "Remove the sleeve and bake on a sheet."], af: [370, 12, 13, 0, 2, ""] } },
+  { n: "Chimichanga", c: "Burritos & handhelds", u: "chimichanga", q: 1, k: "fried burrito chimi beef chicken", w: "gn", d: 165,
+    m: { ov: [400, 20, 25, 0, 8, "Turn once."], af: [370, 12, 15, 0, 2, "Flip halfway."], mw: ["High", 1.5, 2, 1.5, 2, "Shell softens."] } },
+  { n: "Taquitos", c: "Burritos & handhelds", u: "taquito", q: 4, k: "delimex jose ole rolled tacos chicken beef", w: "gnd", d: 165,
+    m: { ov: [425, 13, 15, 0, 24, "Single layer. No need to flip."], af: [400, 7, 9, 0, 10, ""], mw: ["High", 1, 1.25, 0.2, 8, "Softer. On a paper towel."], df: [350, 3, 4, 0, 6, ""] } },
+  { n: "Corn dogs", c: "Burritos & handhelds", u: "corn dog", q: 2, k: "state fair foster farms hot dog on a stick", w: "gnd", d: 165,
+    m: { mw: ["High", 1.25, 1.5, 0.5, 4, "On a paper towel. Turn over halfway, rest 1 min."], ov: [375, 16, 20, 0, 12, "On a baking sheet. Turn once."], af: [370, 8, 10, 0, 4, ""], df: [350, 5, 6, 0, 4, ""] } },
+  { n: "Mini corn dogs", c: "Burritos & handhelds", u: "piece", q: 10, k: "corn dog bites nuggets", w: "gnd", d: 165,
+    m: { mw: ["High", 1, 1.25, 0.08, 14, "On a paper towel."], ov: [375, 15, 17, 0, 40, ""], af: [380, 6, 8, 0, 20, "Shake halfway."] } },
+  { n: "Microwave cheeseburgers", c: "Burritos & handhelds", u: "burger", q: 2, k: "sliders frozen cheeseburger sandwich", w: "gnd", d: 165,
+    m: { mw: ["High", 1, 1.25, 0.4, 4, "Leave in the film-wrapped carton, on a plate."], ov: [350, 15, 18, 0, 8, "Wrap in foil."], af: [340, 6, 8, 0, 4, "Wrap loosely in foil for the first 4 min."] } },
+  { n: "Pigs in a blanket", c: "Burritos & handhelds", u: "piece", q: 12, k: "mini franks cocktail weiners puff pastry", w: "gn", d: 165,
+    m: { ov: [375, 15, 18, 0, 36, ""], af: [350, 8, 10, 0, 15, ""], mw: ["High", 0.75, 1, 0.05, 15, "Pastry softens."] } },
+  { n: "Empanadas", c: "Burritos & handhelds", u: "empanada", q: 2, k: "beef chicken empanadas patties jamaican", w: "gn", d: 165,
+    m: { ov: [375, 20, 25, 0, 12, ""], af: [350, 12, 15, 0, 4, "Flip halfway."] } },
+  { n: "Tamales", c: "Burritos & handhelds", u: "tamale", q: 2, k: "pork chicken cheese tamales husk", w: "gn", d: 165,
+    m: { st: ["Steam", 30, 40, 0, 12, "Stand them upright in a steamer basket over simmering water, covered. Top up the water as needed."], mw: ["High", 2, 3, 0.75, 4, "Leave in the husk and wrap in a damp paper towel."], pc: ["High pressure", 20, 20, 0, 12, "1 cup water and the trivet. Natural release 10 min."] } },
+  { n: "Quesadillas", c: "Burritos & handhelds", u: "quesadilla", q: 1, k: "cheese chicken quesadilla", w: "gn", d: 165,
+    m: { sk: ["Medium", 6, 8, 0, 1, "Dry pan. Flip halfway."], ov: [400, 12, 15, 0, 4, ""], af: [370, 7, 9, 0, 1, ""], mw: ["High", 1.25, 1.75, 1, 2, "Tortilla stays soft."] } },
+  { n: "PB&J crustless sandwich", c: "Burritos & handhelds", u: "sandwich", q: 1, k: "uncrustables peanut butter jelly sandwich", w: "gnd",
+    m: { tw: ["Counter", 30, 60, 0, 0, "Thaw in the wrapper at room temperature. Keeps up to 8 h once thawed."] },
+    no: { mw: "Microwaving makes the filling scalding and the bread tough." } },
+
+  /* ---------- Breakfast ---------- */
+  { n: "Frozen waffles", c: "Breakfast", u: "waffle", q: 2, k: "eggo homestyle blueberry buttermilk waffles kodiak protein", w: "gnd",
+    m: { tt: ["Low–medium", 2, 3, 0, 2, "If not crisp, toast again on the lowest setting."], ov: [450, 5, 5, 0, 12, "Directly on the rack or a sheet. No need to thaw."], af: [360, 3, 4, 0, 4, "Single layer."], mw: ["High", 0.5, 0.75, 0.25, 4, "Soft, not crisp."] } },
+  { n: "Frozen pancakes", c: "Breakfast", u: "pancake", q: 3, k: "pancakes buttermilk eggo jimmy dean mini pancakes", w: "gnd",
+    m: { mw: ["High", 1, 1.25, 0.2, 6, "Cover with a paper towel."], ov: [350, 9, 10, 0, 12, "Cover with foil."], tt: ["Low", 1.5, 2, 0, 2, ""] } },
+  { n: "French toast sticks", c: "Breakfast", u: "stick", q: 5, k: "french toast sticks cinnamon", w: "gnd",
+    m: { ov: [400, 9, 11, 0, 25, "Flip halfway."], af: [370, 6, 8, 0, 10, ""], mw: ["High", 0.75, 1, 0.1, 10, ""] } },
+  { n: "Breakfast sandwich", c: "Breakfast", u: "sandwich", q: 1, k: "jimmy dean croissant biscuit english muffin egg sausage bacon cheese", w: "gnd", d: 160,
+    m: { mw: ["High", 1.5, 2, 1, 2, "Wrap in a paper towel. Cook 1 min, flip, finish. Rest 1 min."], ov: [350, 25, 30, 0, 8, "Wrap in foil, on a sheet."], af: [340, 8, 10, 0, 2, "Separate top and bottom for even heating, then reassemble."] } },
+  { n: "Breakfast bowl", c: "Breakfast", u: "bowl", q: 1, k: "jimmy dean scramble bowl egg potato", w: "gnd", d: 160,
+    m: { mw: ["High", 2.5, 3.5, 2, 2, "Peel the film back. Stir halfway."] } },
+  { n: "Sausage links (fully cooked)", c: "Breakfast", u: "link", q: 3, k: "jimmy dean johnsonville brown n serve pork turkey breakfast sausage", w: "gnd", d: 160,
+    m: { mw: ["High", 0.5, 0.75, 0.12, 10, "On a paper towel."], sk: ["Medium", 7, 9, 0.3, 16, "Turn often."], af: [400, 5, 7, 0, 12, ""], ov: [400, 10, 12, 0, 24, ""] } },
+  { n: "Sausage patties (fully cooked)", c: "Breakfast", u: "patty", q: 2, k: "breakfast sausage patty turkey pork", w: "gnd", d: 160,
+    m: { mw: ["High", 0.75, 1, 0.25, 6, "On a paper towel."], sk: ["Medium", 8, 10, 0, 8, "Flip once."], af: [400, 6, 8, 0, 6, ""] } },
+  { n: "Hash brown patties", c: "Breakfast", u: "patty", q: 4, k: "ore-ida golden hash brown patties potato", w: "gnd",
+    m: { ov: [425, 18, 22, 0, 12, "Flip halfway."], af: [400, 10, 12, 0, 6, "Flip halfway."], sk: ["Medium-high", 8, 10, 0, 6, "1–2 tbsp oil, 4–5 min per side."] },
+    no: { mw: "Hash browns steam and stay soggy in the microwave." } },
+  { n: "Shredded hash browns (bag)", c: "Breakfast", u: "cup", q: 2, s: 0.5, k: "shredded potatoes hash browns country style", w: "gn",
+    m: { sk: ["Medium-high", 10, 14, 1.5, 4, "Thin layer in 2 tbsp oil. Leave undisturbed 5 min, then flip in sections."], af: [400, 15, 18, 0, 2, "Toss with 1 tsp oil. Shake twice."], ov: [425, 25, 30, 0, 6, "Spread thin on an oiled sheet. Flip halfway."] } },
+  { n: "Egg bites", c: "Breakfast", u: "bite", q: 2, k: "sous vide egg bites bacon gruyere three bridges", w: "gn", d: 160,
+    m: { mw: ["High", 1, 1.5, 0.5, 4, "Remove film and cover loosely."], ov: [375, 18, 22, 0, 12, ""], af: [350, 8, 10, 0, 4, ""] } },
+  { n: "Toaster pastries (frozen)", c: "Breakfast", u: "pastry", q: 2, k: "toaster strudel pastries icing", w: "gnd", plural: "pastries",
+    m: { tt: ["Medium", 2, 3, 0, 2, "Cool 2 min before icing."], ov: [400, 15, 18, 0, 12, ""], af: [350, 6, 8, 0, 4, ""] } },
+  { n: "Biscuits (frozen, unbaked)", c: "Breakfast", u: "biscuit", q: 4, k: "pillsbury grands frozen biscuits buttermilk southern", w: "gn",
+    m: { ov: [375, 23, 27, 0, 16, "No need to thaw. Space 2 in. apart on an ungreased sheet."], af: [330, 10, 13, 0, 4, "Leave room for rising."] } },
+  { n: "Croissants (frozen, unbaked)", c: "Breakfast", u: "croissant", q: 4, k: "chocolate croissant almond butter croissant pain au chocolat trader joe's", w: "gn",
+    m: { tw: ["Counter (proof)", 420, 540, 0, 0, "Set on a parchment-lined sheet overnight, uncovered, until they triple in size."], ov: [350, 20, 25, 0, 8, "Bake only after proofing. Done when deep golden."] } },
+  { n: "Bagels (frozen)", c: "Breakfast", u: "bagel", q: 1, k: "plain everything bagel cinnamon raisin", w: "gnd",
+    m: { tt: ["Medium", 3, 4, 0, 2, "Slice first (a serrated knife works on frozen bagels) or thaw 5 min."], tw: ["Counter", 30, 60, 0, 0, "In the bag, at room temp."], mw: ["High", 0.33, 0.5, 0.2, 2, "Thaws only. Wrap in a paper towel, then toast."] } },
+
+  /* ---------- Chicken ---------- */
+  { n: "Chicken nuggets (breaded)", c: "Chicken", u: "nugget", q: 6, k: "tyson dino nuggets perdue simply chicken bites kids chicken breast nuggets", w: "gnd", d: 165,
+    m: { ov: [400, 14, 17, 0, 30, "Single layer. Flip halfway for even browning."], af: [400, 8, 10, 0, 15, "Shake the basket halfway."], mw: ["High", 1, 1.25, 0.12, 12, "Paper towel underneath. Not crisp."], df: [350, 3, 4, 0, 15, ""] } },
+  { n: "Chicken tenders / strips (breaded)", c: "Chicken", u: "tender", q: 4, k: "chicken strips tenders fingers crispy tyson", w: "gnd", d: 165,
+    m: { ov: [400, 18, 20, 0, 20, "Flip halfway."], af: [400, 10, 12, 0, 8, "Flip halfway."], mw: ["High", 1.5, 2, 0.3, 8, "Not crisp."] } },
+  { n: "Popcorn chicken", c: "Chicken", u: "cup", q: 2, s: 0.5, k: "popcorn chicken bites tyson", w: "gnd", d: 165,
+    m: { ov: [425, 10, 12, 0, 6, "Single layer."], af: [400, 7, 9, 0, 3, "Shake halfway."], mw: ["High", 1.5, 2, 0.6, 4, ""] } },
+  { n: "Chicken wings (fully cooked, sauced)", c: "Chicken", u: "lb", q: 1, s: 0.5, k: "buffalo wings hot wings honey bbq tyson any'tizers foster farms", w: "gnd", d: 165,
+    m: { ov: [400, 22, 26, 0, 2, "Single layer on a foil-lined sheet."], af: [400, 14, 16, 0, 1, "Shake halfway."], mw: ["High", 3, 4, 2, 1, "Covered. Skin stays soft."] } },
+  { n: "Chicken wings (raw)", c: "Chicken", u: "lb", q: 1, s: 0.5, k: "raw wings party wings flats drums", w: "gn", d: 165,
+    m: { ov: [425, 45, 50, 0, 2, "From frozen on a rack over a sheet. Flip at 25 min. Toss in sauce after."], af: [380, 25, 30, 0, 1, "Separate pieces after 10 min, then raise to 400°F for the last 5 min."], tw: ["Refrigerator", 720, 1440, 0, 0, "Or a sealed bag in cold water, 1–2 h, changing the water every 30 min."] },
+    no: { mw: "Raw wings can't be cooked safely or evenly in the microwave.", sc: "USDA advises against slow-cooking meat from frozen. Thaw first." } },
+  { n: "Boneless wings (breaded)", c: "Chicken", u: "lb", q: 1, s: 0.5, k: "boneless wings buffalo bites", w: "gnd", d: 165,
+    m: { ov: [400, 15, 18, 0, 2, "Toss in sauce after baking."], af: [400, 10, 12, 0, 1, "Shake halfway."], mw: ["High", 2.5, 3.5, 2, 1, "Not crisp."] } },
+  { n: "Chicken breasts (raw, boneless)", c: "Chicken", u: "breast", q: 2, k: "iqf individually frozen chicken breast raw boneless skinless", w: "gn", d: 165,
+    m: { ov: [400, 30, 40, 0, 8, "Rinse off the ice glaze, pat dry, season. About 50% longer than thawed."], af: [360, 18, 22, 0, 3, "Flip halfway. Thick breasts take the high end."], pc: ["High pressure", 10, 12, 0, 6, "1 cup broth and the trivet. 8 oz breasts 10 min, 12 oz 12–14 min. Natural release 5 min."], bo: ["Simmer", 20, 25, 0, 6, "Cover by 1 in. of broth. Keep at a gentle simmer, not a boil."], sk: ["Medium", 20, 25, 0, 4, "Add 1/4 cup water and cover for the first 10 min, then uncover. Flip every 5 min."], tw: ["Refrigerator", 720, 1440, 0, 0, "Or a sealed bag in cold water, 1–2 h, changing the water every 30 min."] },
+    no: { mw: "Raw chicken cooks unevenly in the microwave. Use it only to defrost, then cook right away.", sc: "USDA advises against slow-cooking meat from frozen. Thaw first." } },
+  { n: "Grilled chicken strips (fully cooked)", c: "Chicken", u: "oz", q: 6, s: 1, k: "tyson grilled ready chicken strips salad topping fajita", w: "gnd", d: 165,
+    m: { mw: ["High", 1.25, 1.75, 0.15, 12, "Covered plate. Stir halfway."], sk: ["Medium", 5, 7, 0.2, 16, "Splash of oil. Stir often."], af: [380, 6, 8, 0, 12, ""] } },
+  { n: "Breaded chicken patties", c: "Chicken", u: "patty", q: 2, k: "chicken patty sandwich tyson spicy", w: "gnd", d: 165,
+    m: { ov: [400, 16, 20, 0, 10, "Flip halfway."], af: [400, 9, 11, 0, 4, ""], mw: ["High", 1.5, 2, 0.75, 4, "Not crisp."] } },
+  { n: "Stuffed chicken breast (raw)", c: "Chicken", u: "piece", q: 2, k: "chicken kiev cordon bleu broccoli cheese stuffed barber foods", w: "gn", d: 165,
+    m: { ov: [375, 35, 40, 0, 8, "These are raw. Bake until the center hits 165°F."], af: [360, 20, 25, 0, 3, ""] },
+    no: { mw: "These are raw and can't be cooked safely in the microwave." } },
+
+  /* ---------- Seafood ---------- */
+  { n: "Breaded fish fillets", c: "Seafood", u: "fillet", q: 2, k: "gorton's van de kamp's battered cod pollock fish fillets", w: "gnd", d: 165,
+    m: { ov: [425, 18, 22, 0, 10, "Flip halfway so both sides crisp."], af: [400, 10, 12, 0, 4, ""], df: [350, 4, 5, 0, 4, ""] },
+    no: { mw: "The coating goes soggy and the fish heats unevenly." } },
+  { n: "Fish sticks", c: "Seafood", u: "stick", q: 6, k: "fish fingers gorton's kids", w: "gnd", d: 165,
+    m: { ov: [425, 15, 18, 0, 30, "Flip halfway."], af: [400, 8, 10, 0, 15, ""], mw: ["High", 1.25, 1.5, 0.15, 10, "Not crisp."] } },
+  { n: "Shrimp (raw, peeled)", c: "Seafood", u: "lb", q: 1, s: 0.5, k: "frozen shrimp raw peeled deveined tail on prawns", w: "gn", d: 145,
+    m: { tw: ["Cold water", 10, 15, 0, 0, "Sealed bag in cold water, or overnight in the fridge. Don't use hot water."], sk: ["Medium-high", 4, 6, 0, 1, "Thawed: 2 tbsp oil, 2–3 min per side until pink and opaque. Add 2 min from frozen."], bo: ["Boil", 2, 3, 0, 2, "Salted boiling water. Drain when pink and curled into a C."], af: [400, 6, 8, 0, 0.75, "From frozen. Toss with oil and shake halfway."], gr: ["Medium-high", 4, 6, 0, 1, "Thawed, on skewers. 2–3 min per side."], st: ["Steam", 4, 6, 0, 1, ""] } },
+  { n: "Shrimp (cooked, cocktail)", c: "Seafood", u: "lb", q: 1, s: 0.5, k: "cooked shrimp ring cocktail tail on", w: "gn",
+    m: { tw: ["Cold water", 8, 10, 0, 0, "Sealed bag in cold water. Serve chilled, or thaw overnight in the fridge."] },
+    no: { sk: "It's already cooked, so reheating turns it rubbery. To serve warm, stir into a hot dish for the last minute.", mw: "Already cooked. Microwaving makes it rubbery." } },
+  { n: "Breaded shrimp", c: "Seafood", u: "oz", q: 8, s: 2, k: "popcorn shrimp butterfly shrimp breaded", w: "gn", d: 165,
+    m: { ov: [425, 10, 12, 0, 20, "Single layer. Flip halfway."], af: [400, 7, 9, 0, 10, ""], df: [350, 2, 3, 0, 8, ""] } },
+  { n: "Coconut shrimp", c: "Seafood", u: "piece", q: 8, k: "coconut shrimp sweet chili", w: "gn", d: 165,
+    m: { ov: [425, 12, 15, 0, 24, "Flip halfway."], af: [390, 8, 10, 0, 10, ""] } },
+  { n: "Salmon fillets (raw)", c: "Seafood", u: "fillet", q: 2, k: "atlantic sockeye coho salmon portions skinless wild", w: "gn", d: 145,
+    m: { ov: [425, 20, 25, 0, 8, "From frozen: rinse off ice, pat dry, brush with oil, season. Cover with foil for the first 10 min."], af: [390, 14, 17, 0, 3, "From frozen. Brush with oil."], sk: ["Medium", 12, 15, 0, 3, "Covered for 5 min, then uncover and flip."], gr: ["Medium-high", 14, 18, 0, 6, "Easier thawed. Use foil or a grill basket."], st: ["Steam", 12, 15, 0, 3, ""], pc: ["High pressure", 4, 5, 0, 4, "1 cup water and the trivet. Quick release."], tw: ["Refrigerator", 480, 720, 0, 0, "Overnight in the fridge, or a sealed bag in cold water for 1 h."] } },
+  { n: "White fish fillets (raw)", c: "Seafood", u: "fillet", q: 2, k: "tilapia cod swai mahi pollock haddock white fish", w: "gn", d: 145,
+    m: { ov: [425, 18, 22, 0, 8, "From frozen: rinse, pat dry, oil and season."], af: [390, 12, 14, 0, 3, ""], sk: ["Medium", 10, 12, 0, 3, "Covered 4 min, then uncover and flip."], st: ["Steam", 10, 12, 0, 3, ""], pc: ["High pressure", 3, 4, 0, 4, "1 cup water and the trivet. Quick release."] } },
+  { n: "Crab cakes", c: "Seafood", u: "cake", q: 2, k: "maryland crab cakes", w: "gn", d: 165,
+    m: { ov: [400, 18, 22, 0, 8, "Flip halfway."], af: [375, 12, 14, 0, 4, ""], sk: ["Medium", 8, 10, 0, 4, "2 tbsp oil, 4–5 min per side."] } },
+
+  /* ---------- Meat ---------- */
+  { n: "Beef burger patties (raw, ¼ lb)", c: "Meat", u: "patty", q: 2, k: "frozen hamburger patties ground beef angus", w: "gn", d: 160,
+    m: { sk: ["Medium-high", 10, 12, 0, 4, "From frozen. No oil needed. Flip every 3 min."], gr: ["Medium-high", 12, 15, 0, 8, "Flip once juices pool on top, about halfway."], af: [370, 13, 15, 0, 4, "Flip halfway."], ov: [425, 20, 25, 0, 8, "On a rack over a sheet. Flip halfway."] },
+    no: { mw: "Raw patties cook unevenly and turn gray and rubbery." } },
+  { n: "Turkey burgers (raw)", c: "Meat", u: "patty", q: 2, k: "turkey burger patties butterball", w: "gn", d: 165,
+    m: { sk: ["Medium", 12, 14, 0, 4, "1 tsp oil. Flip every 3–4 min."], gr: ["Medium", 14, 16, 0, 8, "Oil the grates."], af: [360, 14, 16, 0, 4, "Flip halfway."], ov: [400, 22, 26, 0, 8, ""] } },
+  { n: "Ground beef (1 lb, frozen)", c: "Meat", u: "lb", q: 1, s: 0.5, k: "ground beef chub hamburger meat brick", w: "gn", d: 160,
+    m: { sk: ["Medium-high", 15, 20, 5, 2, "Add 1/4 cup water and cover. Scrape off cooked outer layers every few minutes until it all browns."], pc: ["High pressure", 20, 25, 0, 3, "1 cup water and the trivet. Natural release 10 min, then break up."], tw: ["Refrigerator", 1440, 1440, 0, 0, "About 24 h per pound. Cold-water method: 1–2 h."] },
+    no: { sc: "USDA advises against slow-cooking meat from frozen. Thaw first." } },
+  { n: "Meatballs (fully cooked)", c: "Meat", u: "meatball", q: 8, k: "italian swedish homestyle cooked perfect rosina turkey meatballs", w: "gnd", d: 165,
+    m: { mw: ["High", 1.5, 2, 0.12, 24, "Covered dish. Stir halfway."], ov: [350, 18, 22, 0, 60, "Single layer on a sheet."], sk: ["Medium-low", 15, 20, 0.2, 40, "Simmer, covered, in about 3 cups sauce. Stir now and then."], af: [380, 8, 10, 0, 20, "Shake halfway."], sc: ["Low", 240, 300, 0, 100, "In sauce, or High for 2–3 h. Stir now and then and check they reach 165°F."], pc: ["High pressure", 5, 6, 0, 60, "In 1 cup sauce plus 1/2 cup water. Quick release."] } },
+  { n: "BBQ ribs (fully cooked)", c: "Meat", u: "rack", q: 1, k: "baby back pork ribs bbq tray", w: "gn", d: 165,
+    m: { ov: [375, 35, 45, 0, 2, "Remove film, cover with foil, set on a sheet. Brush extra sauce on for the last 5 min uncovered."], gr: ["Medium", 15, 20, 0, 2, "Thaw first. Turn often so the sauce doesn't burn."], mw: ["High", 6, 8, 4, 1, "Vent film. Rotate halfway."] } },
+
+  /* ---------- Appetizers ---------- */
+  { n: "Mozzarella sticks", c: "Appetizers", u: "stick", q: 6, k: "farm rich cheese sticks breaded mozzarella", w: "gnd",
+    m: { ov: [400, 8, 10, 0, 24, "Bake straight from frozen. Pull them as soon as the cheese starts to ooze."], af: [390, 5, 7, 0, 8, "Don't thaw first."], df: [350, 1, 1.5, 0, 8, ""] },
+    no: { mw: "The cheese bursts out before the coating heats." } },
+  { n: "Jalapeño poppers", c: "Appetizers", u: "popper", q: 6, k: "cream cheese cheddar jalapeno poppers", w: "gn",
+    m: { ov: [400, 12, 14, 0, 24, ""], af: [380, 7, 9, 0, 10, ""], df: [350, 2.5, 3, 0, 8, ""] } },
+  { n: "Onion rings", c: "Appetizers", u: "ring", q: 10, k: "battered breaded onion rings", w: "gnd",
+    m: { ov: [425, 12, 14, 0, 30, "Single layer. Flip halfway."], af: [400, 8, 10, 0, 12, ""], df: [375, 2, 3, 0, 10, ""] } },
+  { n: "Egg rolls", c: "Appetizers", u: "egg roll", q: 2, k: "chicken pork vegetable egg roll chinese", w: "gnd", d: 165,
+    m: { ov: [425, 18, 22, 0, 12, "Turn halfway."], af: [390, 10, 12, 0, 4, ""], mw: ["High", 1.5, 2, 0.75, 4, "Wrapper softens."], df: [350, 4, 5, 0, 4, ""] } },
+  { n: "Mini spring rolls", c: "Appetizers", u: "roll", q: 8, k: "vegetable spring rolls mini thai", w: "gn",
+    m: { ov: [400, 12, 15, 0, 30, ""], af: [380, 8, 10, 0, 12, ""], df: [350, 2, 3, 0, 10, ""] } },
+  { n: "Potstickers / gyoza", c: "Appetizers", u: "dumpling", q: 8, k: "bibigo ling ling chicken pork vegetable dumplings mandu potsticker", w: "gnd", d: 165,
+    m: { sk: ["Medium-high", 9, 11, 0, 12, "1 tbsp oil, flat side down. Add 1/3 cup water, cover 6–8 min until the water is gone, then uncover 2 min to crisp."], bo: ["Boil", 5, 7, 0, 20, "Lower gently into boiling water. Done 2 min after they float."], st: ["Steam", 8, 10, 0, 12, "Line the basket with parchment."], mw: ["High", 2, 2.5, 0.15, 10, "In a dish with 2 tbsp water, covered."], af: [380, 10, 12, 0, 10, "Brush with oil. Flip halfway."], df: [350, 3, 4, 0, 8, ""] } },
+  { n: "Soup dumplings", c: "Appetizers", u: "dumpling", q: 6, k: "xiao long bao xlb pork soup dumplings", w: "gn", d: 165,
+    m: { st: ["Steam", 10, 12, 0, 8, "On parchment or cabbage leaves, not touching."], mw: ["High", 2, 2.5, 0.2, 6, "In a bowl with 2 tbsp water, covered with a damp paper towel. Rest 1 min. The broth is very hot."] } },
+  { n: "Shumai", c: "Appetizers", u: "piece", q: 6, k: "siu mai shrimp pork dim sum", w: "gn", d: 165,
+    m: { st: ["Steam", 8, 10, 0, 10, "On parchment."], mw: ["High", 1.5, 2, 0.2, 8, "Covered with a damp paper towel."] } },
+  { n: "Bao buns (filled)", c: "Appetizers", u: "bun", q: 2, k: "pork bao char siu bun steamed buns", w: "gn", d: 165,
+    m: { st: ["Steam", 10, 15, 0, 6, "Leave space for them to puff."], mw: ["High", 1, 1.5, 0.5, 3, "Wrap in a damp paper towel."] } },
+  { n: "Samosas", c: "Appetizers", u: "samosa", q: 4, k: "potato pea vegetable samosa indian", w: "gn",
+    m: { ov: [400, 18, 22, 0, 16, "Flip halfway."], af: [360, 10, 12, 0, 6, ""], df: [350, 4, 5, 0, 6, ""] } },
+  { n: "Soft pretzels", c: "Appetizers", u: "pretzel", q: 2, k: "superpretzel soft pretzel bites", w: "gnd",
+    m: { ov: [400, 3, 5, 0, 8, "Moisten the pretzels, sprinkle salt, bake on a sheet."], mw: ["High", 0.75, 1, 0.35, 4, "Moisten, salt, then microwave on a plate."], af: [350, 3, 4, 0, 3, ""] } },
+  { n: "Mini quiches", c: "Appetizers", u: "quiche", q: 6, k: "quiche lorraine spinach mini bites", w: "gn", d: 160,
+    m: { ov: [375, 15, 18, 0, 24, ""], mw: ["High", 1, 1.25, 0.15, 8, ""], af: [350, 7, 9, 0, 10, ""] } },
+  { n: "Spanakopita", c: "Appetizers", u: "piece", q: 6, k: "spinach feta triangles greek phyllo", w: "gn",
+    m: { ov: [375, 18, 20, 0, 24, ""], af: [350, 8, 10, 0, 10, ""] } },
+  { n: "Mini tacos", c: "Appetizers", u: "taco", q: 10, k: "snack tacos beef mini tacos", w: "gn", d: 165,
+    m: { ov: [425, 10, 12, 0, 30, ""], af: [390, 6, 8, 0, 14, ""] } },
+  { n: "Potato skins", c: "Appetizers", u: "skin", q: 6, k: "loaded potato skins bacon cheddar", w: "gn",
+    m: { ov: [400, 12, 15, 0, 18, ""], af: [380, 8, 10, 0, 8, ""] } },
+  { n: "Spinach artichoke dip", c: "Appetizers", u: "container", q: 1, k: "spinach dip artichoke tub frozen dip", w: "gn",
+    m: { ov: [375, 35, 40, 0, 2, "Move to an oven-safe dish. Stir halfway."], mw: ["High", 4, 5, 2.5, 1, "Microwave-safe dish. Stir every minute."] } },
+
+  /* ---------- Potatoes & fries ---------- */
+  { n: "French fries (straight cut)", c: "Potatoes & fries", u: "oz", q: 16, s: 2, k: "ore-ida golden fries frozen fries", w: "gnd",
+    m: { ov: [425, 20, 25, 0.3, 20, "Single layer on a sheet. Flip halfway. Crowding makes them soggy."], af: [400, 12, 16, 0, 12, "Shake the basket 2–3 times."], df: [350, 3, 4, 0, 12, ""] },
+    no: { mw: "Fries steam instead of crisping." } },
+  { n: "Crinkle-cut fries", c: "Potatoes & fries", u: "oz", q: 16, s: 2, k: "crinkle cut fries", w: "gnd",
+    m: { ov: [425, 18, 22, 0.3, 20, "Single layer. Flip halfway."], af: [400, 12, 15, 0, 12, "Shake 2–3 times."], df: [350, 3, 4, 0, 12, ""] }, no: { mw: "Fries steam instead of crisping." } },
+  { n: "Shoestring fries", c: "Potatoes & fries", u: "oz", q: 16, s: 2, k: "shoestring thin fries", w: "gn",
+    m: { ov: [425, 14, 18, 0.25, 20, "Single layer. Flip halfway."], af: [400, 10, 12, 0, 12, "Shake often. Thin fries burn fast."], df: [350, 2, 3, 0, 12, ""] }, no: { mw: "Fries steam instead of crisping." } },
+  { n: "Waffle fries", c: "Potatoes & fries", u: "oz", q: 16, s: 2, k: "waffle fries criss cut", w: "gn",
+    m: { ov: [425, 18, 22, 0.3, 20, "Single layer. Flip halfway."], af: [400, 12, 15, 0, 12, "Shake halfway."] }, no: { mw: "Fries steam instead of crisping." } },
+  { n: "Sweet potato fries", c: "Potatoes & fries", u: "oz", q: 16, s: 2, k: "sweet potato fries alexia", w: "gn",
+    m: { ov: [425, 18, 22, 0.3, 20, "Single layer. Flip halfway. They darken fast at the end."], af: [380, 12, 15, 0, 10, "Shake halfway."] }, no: { mw: "Fries steam instead of crisping." } },
+  { n: "Curly fries", c: "Potatoes & fries", u: "oz", q: 16, s: 2, k: "curly fries seasoned twister", w: "gn",
+    m: { ov: [425, 18, 22, 0.3, 20, "Single layer. Flip halfway."], af: [400, 12, 15, 0, 12, "Shake halfway."], df: [350, 3, 4, 0, 12, ""] }, no: { mw: "Fries steam instead of crisping." } },
+  { n: "Steak fries / potato wedges", c: "Potatoes & fries", u: "oz", q: 16, s: 2, k: "steak fries wedges thick cut", w: "gn",
+    m: { ov: [425, 22, 28, 0.3, 20, "Single layer. Flip halfway."], af: [400, 15, 18, 0, 12, "Shake halfway."] }, no: { mw: "Fries steam instead of crisping." } },
+  { n: "Tater tots", c: "Potatoes & fries", u: "oz", q: 16, s: 2, k: "tots ore-ida potato puffs crispy crowns", w: "gnd",
+    m: { ov: [425, 20, 24, 0.25, 20, "Single layer. Shake the pan halfway."], af: [400, 12, 15, 0, 12, "Shake halfway."], df: [350, 3, 4, 0, 12, ""] }, no: { mw: "Tots steam and go mushy." } },
+  { n: "Mashed potatoes", c: "Potatoes & fries", u: "cup", q: 2, s: 0.5, k: "frozen mashed potatoes ore-ida steam n mash", w: "gn",
+    m: { mw: ["High", 4, 5, 2, 6, "Covered bowl with 2 tbsp milk. Stir every 2 min."], sk: ["Medium-low", 8, 10, 1, 8, "Saucepan with a splash of milk, covered. Stir often."] } },
+  { n: "Twice-baked potatoes", c: "Potatoes & fries", u: "potato", q: 2, k: "stuffed potatoes cheddar", w: "gn", plural: "potatoes",
+    m: { ov: [375, 40, 45, 0, 8, "On a sheet, from frozen."], mw: ["High", 4, 5, 2, 4, "Covered."], af: [350, 18, 20, 0, 4, ""] } },
+
+  /* ---------- Vegetables ---------- */
+  { n: "Steam-in-bag vegetables", c: "Vegetables", u: "bag", q: 1, k: "birds eye steamfresh green giant mixed vegetables broccoli steamer bag microwave", w: "gnd",
+    m: { mw: ["High", 5, 6, 0, 1, "Microwave in the sealed bag. It vents itself. Rest 1 min and open carefully away from your face."] } },
+  veg("Broccoli florets", "frozen broccoli florets cuts"),
+  veg("Cauliflower florets", "frozen cauliflower"),
+  veg("Green beans", "cut green beans french style haricots verts", { mw: ["High", 5, 6, 0.2, 24, "Covered dish with 2 tbsp water. Stir halfway, then drain."] }),
+  veg("Peas", "sweet peas green peas", { mw: ["High", 4, 5, 0.2, 24, "Covered dish with 2 tbsp water. Stir halfway."], bo: ["Boil", 2, 3, 0, 32, "Into salted boiling water, then drain."], st: ["Steam", 3, 4, 0, 24, ""], ov: null, af: null }),
+  veg("Corn kernels", "sweet corn kernels super sweet", { mw: ["High", 4, 5, 0.2, 24, "Covered dish with 2 tbsp water. Stir halfway."], bo: ["Boil", 3, 4, 0, 32, ""], ov: [425, 18, 22, 0, 24, "Toss with oil for roasted corn."], af: [400, 10, 12, 0, 12, "Toss with oil. Shake halfway."] }),
+  veg("Mixed vegetables", "mixed veggies carrots peas corn green beans medley", { ov: null, af: null }),
+  veg("Stir-fry vegetable blend", "asian stir fry vegetables snap peas", { sk: ["High", 6, 8, 0.15, 16, "1 tbsp oil in a hot wok or skillet. Stir constantly. Add sauce in the last minute."] }),
+  veg("Brussels sprouts", "brussels sprouts", { ov: [425, 25, 30, 0, 24, "Toss with oil. Roast cut-side down if halved."], af: [390, 15, 18, 0, 12, "Shake halfway."], mw: ["High", 6, 8, 0.2, 24, "Covered dish with 2 tbsp water."] }),
+  veg("Chopped spinach (10 oz box)", "spinach leaf chopped box", { mw: ["High", 4, 5, 0.2, 20, "Covered dish. Squeeze out the water before using."], sk: ["Medium", 5, 7, 0.15, 20, "Thaw in the pan with butter. Cook until water evaporates."], ov: null, af: null, st: null }, { q: 10 }),
+  veg("Edamame (in pods)", "soybeans edamame pods shelled", { bo: ["Boil", 3, 5, 0, 32, "Salted boiling water. Drain and sprinkle with flaky salt."], mw: ["High", 3, 4, 0.2, 24, "Covered with 2 tbsp water."], ov: null, af: null, sk: null }),
+  veg("Riced cauliflower", "cauliflower rice riced veggies low carb", { sk: ["Medium-high", 5, 7, 0.15, 16, "1 tbsp oil. Cook uncovered so it doesn't get mushy."], mw: ["High", 4, 5, 0.2, 24, "Covered, no water needed."], bo: null, st: null, ov: null, af: null }),
+  veg("Butternut squash cubes", "butternut squash cubes diced", { ov: [425, 25, 30, 0, 24, "Toss with oil. Flip halfway."], af: [400, 14, 18, 0, 12, ""], mw: ["High", 6, 8, 0.2, 24, "Covered with 2 tbsp water."] }),
+  veg("Pepper & onion strips", "fajita vegetables peppers onions blend", { sk: ["Medium-high", 7, 9, 0.15, 16, "1 tbsp oil. Cook until the water evaporates and edges char."], bo: null, st: null }),
+  veg("Carrots (sliced)", "sliced carrots crinkle cut baby carrots", { mw: ["High", 6, 7, 0.2, 24, "Covered dish with 2 tbsp water."], bo: ["Boil", 5, 7, 0, 32, ""] }),
+  veg("Asparagus spears", "asparagus spears cuts", { mw: ["High", 4, 5, 0.2, 20, "Covered with 2 tbsp water."], bo: ["Boil", 3, 4, 0, 32, ""], ov: [425, 12, 15, 0, 24, "Toss with oil."] }),
+  { n: "Corn on the cob", c: "Vegetables", u: "ear", q: 2, k: "corn cobbettes mini ears", w: "gn",
+    m: { bo: ["Boil", 6, 8, 0, 8, "Return water to a boil, then time."], mw: ["High", 5, 6, 2, 4, "Covered dish with 2 tbsp water. Turn halfway."], gr: ["Medium", 15, 20, 0, 8, "Brush with butter. Turn every 5 min."], ov: [400, 25, 30, 0, 8, "Wrapped in foil with butter."] } },
+  { n: "Breaded okra", c: "Vegetables", u: "oz", q: 12, s: 2, k: "fried okra breaded southern", w: "g",
+    m: { ov: [425, 18, 22, 0, 24, "Single layer. Flip halfway."], af: [400, 10, 12, 0, 12, "Shake halfway."], df: [350, 3, 4, 0, 12, ""] } },
+
+  /* ---------- Fruit ---------- */
+  { n: "Mixed berries", c: "Fruit", u: "cup", q: 1, s: 0.5, k: "frozen strawberries blueberries raspberries blackberries smoothie", w: "gnd",
+    m: { tw: ["Refrigerator", 180, 360, 0, 0, "Covered bowl in the fridge. For toppings, 15–30 min at room temp works. Use straight from frozen in smoothies."], mw: ["30% (defrost)", 1, 1.5, 0.5, 3, "In 30-second bursts. Stir between."], bo: ["Simmer", 8, 10, 1, 6, "Quick compote: add 1 tbsp sugar and 1 tbsp water per cup. Stir often."] } },
+  { n: "Mango or pineapple chunks", c: "Fruit", u: "cup", q: 1, s: 0.5, k: "mango pineapple tropical fruit chunks smoothie", w: "gnd",
+    m: { tw: ["Refrigerator", 240, 360, 0, 0, "Covered bowl in the fridge. Use straight from frozen in smoothies."], mw: ["30% (defrost)", 1, 1.5, 0.5, 3, "In 30-second bursts."] } },
+  { n: "Acai or pitaya packs", c: "Fruit", u: "pack", q: 1, k: "acai packs sambazon pitaya smoothie bowl", w: "gn",
+    m: { tw: ["Warm water", 0.25, 0.5, 0, 0, "Run the sealed pack under warm water for 10–30 sec so it breaks apart, then blend."] } },
+
+  /* ---------- Breads & dough ---------- */
+  { n: "Garlic bread (loaf halves)", c: "Breads & dough", u: "half", q: 2, k: "garlic bread loaf cheese texas", w: "gnd", plural: "halves",
+    m: { ov: [400, 10, 12, 0, 4, "Spread side up on a sheet. Broil 1 min more for extra color."], af: [350, 5, 7, 0, 1, ""] } },
+  { n: "Texas toast", c: "Breads & dough", u: "slice", q: 4, k: "texas toast garlic cheese", w: "gnd",
+    m: { ov: [425, 5, 7, 0, 8, "Single layer."], af: [350, 4, 5, 0, 4, ""] } },
+  { n: "Dinner rolls (frozen dough)", c: "Breads & dough", u: "roll", q: 12, k: "rhodes bake n serv yeast rolls dough", w: "gn",
+    m: { tw: ["Counter (rise)", 180, 300, 0, 0, "Set on a greased pan, cover with sprayed plastic wrap, and let double in size."], ov: [350, 15, 20, 0, 12, "Only after rising. Done when golden brown."] } },
+  { n: "Puff pastry sheets", c: "Breads & dough", u: "sheet", q: 1, k: "puff pastry pepperidge farm dufour", w: "gn",
+    m: { tw: ["Counter", 40, 40, 0, 0, "About 40 min at room temp, or overnight in the fridge. It should unfold without cracking."], ov: [400, 15, 20, 0, 2, "Typical bake time for most puff pastry recipes."] } },
+  { n: "Pie crust shells", c: "Breads & dough", u: "shell", q: 1, k: "pie shell crust deep dish marie callender's", w: "gn",
+    m: { ov: [400, 10, 12, 0, 2, "Blind bake: prick the bottom with a fork and bake from frozen on a sheet. For filled pies, follow your recipe."], tw: ["Counter", 10, 15, 0, 0, "Just enough to crimp edges or fit into your own pan."] } },
+  { n: "Naan", c: "Breads & dough", u: "piece", q: 2, k: "naan flatbread garlic naan", w: "gn",
+    m: { ov: [400, 3, 4, 0, 6, "Sprinkle with water first."], af: [350, 2, 3, 0, 1, ""], sk: ["Medium", 1.5, 2, 0, 1, "Dry pan, flip halfway."] } },
+
+  /* ---------- Desserts ---------- */
+  { n: "Ice cream (to soften)", c: "Desserts", u: "pint", q: 1, k: "ben & jerry's haagen dazs halo top gelato pint tub carton", w: "gnd",
+    m: { tw: ["Counter", 5, 10, 0, 0, "Let stand until scoopable. 1.5-qt tubs take 10–15 min."], mw: ["30% (defrost)", 0.25, 0.33, 0, 1, "Lid off, in 10-second bursts. Stop before the edges melt."] } },
+  { n: "Ice cream bars & sandwiches", c: "Desserts", u: "bar", q: 1, k: "ice cream sandwich drumstick klondike popsicle novelty", w: "gnd",
+    m: { tw: ["Counter", 2, 3, 0, 0, "Eat straight from the freezer, or let stand a couple of minutes to soften."] } },
+  { n: "Mochi ice cream", c: "Desserts", u: "piece", q: 2, k: "mochi ice cream my mo", w: "gn",
+    m: { tw: ["Counter", 5, 10, 0, 0, "Soften until the rice dough is pliable."] } },
+  { n: "Fruit pie (unbaked, 9 in.)", c: "Desserts", u: "pie", q: 1, k: "apple cherry dutch apple peach pie marie callender's", w: "gn", x: "to",
+    m: { ov: [400, 60, 70, 5, 2, "Bake from frozen on a foil-lined sheet. Cut 4 slits in the top. Shield the edges with foil if they brown fast. Cool 2 h before slicing."] } },
+  { n: "Cream pie", c: "Desserts", u: "pie", q: 1, k: "banana cream chocolate cream coconut pie edwards", w: "gn",
+    m: { tw: ["Refrigerator", 240, 360, 0, 0, "Thaw in the fridge. Slices cut from frozen soften in about 30 min."] } },
+  { n: "Cheesecake", c: "Desserts", u: "cake", q: 1, k: "new york cheesecake sara lee", w: "gn",
+    m: { tw: ["Refrigerator", 240, 360, 0, 0, "Whole cake in the fridge. Single slices: about 30 min at room temp."] } },
+  { n: "Cookie dough (pre-portioned)", c: "Desserts", u: "cookie", q: 12, k: "chocolate chip cookie dough frozen pucks toll house", w: "gnd",
+    m: { ov: [350, 14, 16, 0, 12, "From frozen, 2 in. apart. Pull when edges are golden. Centers set as they cool."], af: [310, 7, 9, 0, 4, "Line the basket with parchment."] } },
+  { n: "Molten lava cakes", c: "Desserts", u: "cake", q: 2, k: "chocolate lava cake molten", w: "gn",
+    m: { mw: ["High", 0.75, 1, 0.5, 2, "On a plate. Rest 1 min."], ov: [425, 13, 15, 0, 6, ""] } },
+  { n: "Churros", c: "Desserts", u: "churro", q: 4, k: "churros cinnamon sugar", w: "gn",
+    m: { ov: [425, 8, 10, 0, 16, ""], af: [375, 5, 7, 0, 6, ""], df: [350, 1.5, 2, 0, 6, "Roll in cinnamon sugar while hot."] } },
+  { n: "Whipped topping", c: "Desserts", u: "tub", q: 1, k: "cool whip whipped cream topping", w: "gnd",
+    m: { tw: ["Refrigerator", 240, 240, 0, 0, "About 4 h in the fridge. Don't thaw on the counter."] },
+    no: { mw: "Microwaving collapses the whipped texture." } },
+
+  /* ---------- Plant-based ---------- */
+  { n: "Veggie burger patties", c: "Plant-based", u: "patty", q: 2, k: "beyond impossible morningstar boca gardein plant based burger black bean", w: "gnd", d: 165,
+    m: { sk: ["Medium", 8, 10, 0, 4, "Light oil. Flip halfway."], gr: ["Medium", 8, 10, 0, 8, "Oil the grates."], af: [375, 8, 10, 0, 4, ""], ov: [400, 15, 18, 0, 10, ""], mw: ["High", 1, 1.5, 0.5, 4, "Softer texture."] } },
+  { n: "Plant-based nuggets", c: "Plant-based", u: "nugget", q: 6, k: "vegan chicken nuggets gardein morningstar", w: "gn", d: 165,
+    m: { ov: [400, 12, 15, 0, 30, "Flip halfway."], af: [400, 8, 10, 0, 15, ""], mw: ["High", 1, 1.5, 0.12, 12, ""] } },
+  { n: "Meatless crumbles", c: "Plant-based", u: "cup", q: 1, s: 0.5, k: "veggie crumbles ground plant based taco", w: "gn", d: 165,
+    m: { sk: ["Medium", 5, 7, 1, 6, "Splash of oil. Stir often."], mw: ["High", 2, 2.5, 1, 4, "Covered. Stir halfway."] } },
+  { n: "Falafel", c: "Plant-based", u: "piece", q: 6, k: "falafel chickpea", w: "gn",
+    m: { ov: [375, 12, 15, 0, 24, ""], af: [375, 8, 10, 0, 12, ""] } },
+
+  /* ---------- Costco staples ---------- */
+  { n: "Chicken bakes", c: "Burritos & handhelds", u: "bake", q: 1, k: "kirkland chicken bake food court caesar bacon", w: "c", d: 165,
+    m: { ov: [400, 30, 35, 0, 6, "From frozen on a lined sheet. Let stand 3 min."], af: [350, 15, 18, 0, 2, "Flip halfway."], mw: ["High", 2.5, 3, 1.5, 2, "Crust stays soft. Rest 1 min."] } },
+  { n: "Take-and-bake pizza (18 in.)", c: "Pizza", u: "pizza", q: 1, k: "costco deli take and bake pizza kirkland large cheese pepperoni", w: "c", x: "to",
+    m: { ov: [400, 20, 25, 2, 1, "Times are for a pizza you froze at home. Bake on a large pan. Straight from the fridge it takes 12–15 min."] },
+    no: { mw: "An 18-inch pizza is far too large for a microwave.", af: "An 18-inch pizza is far too large for an air fryer." } },
+  { n: "Pupusas", c: "Burritos & handhelds", u: "pupusa", q: 2, k: "pupusas bean cheese pork revuelta salvadoran", w: "cg", d: 165,
+    m: { sk: ["Medium", 8, 10, 0, 4, "Dry griddle or lightly oiled pan, 4–5 min per side."], mw: ["High", 1.5, 2, 0.75, 4, "Wrapped in a damp paper towel."], af: [380, 8, 10, 0, 3, ""] } },
+  { n: "Korean beef bulgogi", c: "Meat", u: "lb", q: 1, s: 0.5, k: "bibigo bulgogi marinated beef korean bbq", w: "cg", d: 160,
+    m: { sk: ["Medium-high", 6, 8, 2, 1, "Thin layer in a hot pan. Separate slices as they thaw. Thawed overnight it cooks in 3–4 min."], mw: ["High", 3, 4, 2, 1, "Covered. Stir halfway."] } },
+  { n: "Ahi tuna steaks", c: "Seafood", u: "steak", q: 2, k: "kirkland ahi yellowfin tuna steaks sashimi", w: "cn", d: "rare",
+    m: { tw: ["Refrigerator", 480, 720, 0, 0, "Overnight in the fridge, or the sealed pack in cold water 30–45 min. Pat very dry."], sk: ["High", 2, 4, 0, 2, "Thawed. Smoking-hot pan, a little oil. About 1 min per side for rare, 2 for medium."], gr: ["High", 4, 6, 0, 4, "Thawed, oiled grates. 2–3 min per side."] },
+    no: { mw: "Microwaving cooks tuna gray and dry." } },
+  { n: "Lobster tails (raw)", c: "Seafood", u: "tail", q: 2, k: "lobster tails kirkland cold water", w: "cn", d: 140,
+    m: { tw: ["Refrigerator", 480, 720, 0, 0, "Thaw before cooking for even results. Cold water: 30–60 min."], bo: ["Boil", 5, 7, 0, 6, "Thawed. About 1 min per oz. Done when the shell is bright red."], st: ["Steam", 7, 9, 0, 4, "Thawed. About 1.5 min per oz."], gr: ["Medium-high", 8, 10, 0, 6, "Thawed and split. Meat side down first."], ov: [425, 12, 15, 0, 6, "Thawed and butterflied, brushed with butter."] },
+    no: { mw: "Lobster turns tough and rubbery in the microwave." } },
+  { n: "Crab legs (pre-cooked)", c: "Seafood", u: "lb", q: 1, s: 0.5, k: "snow crab king crab legs clusters dungeness kirkland", w: "cn",
+    m: { st: ["Steam", 5, 7, 0, 3, "From frozen. They're already cooked, so you're only heating them."], bo: ["Boil", 4, 5, 0, 3, ""], ov: [400, 10, 15, 0, 4, "Wrap in foil with a splash of water."], gr: ["Medium", 5, 7, 0, 3, "Brush with butter."], tw: ["Refrigerator", 480, 720, 0, 0, "Thaw to serve chilled."] } },
+  { n: "Sea scallops (raw)", c: "Seafood", u: "lb", q: 1, s: 0.5, k: "scallops sea bay kirkland", w: "cn", d: 145,
+    m: { tw: ["Refrigerator", 480, 720, 0, 0, "Or a sealed bag in cold water 30 min. Pat very dry for a good sear."], sk: ["High", 3, 4, 0, 0.75, "Thawed. Hot oil, don't move them. 1.5–2 min per side."], af: [400, 6, 8, 0, 0.5, "Thawed, brushed with butter."] },
+    no: { mw: "Scallops turn rubbery in the microwave." } },
+  { n: "Shrimp tempura", c: "Seafood", u: "piece", q: 8, k: "tempura shrimp japanese battered", w: "cn", d: 165,
+    m: { ov: [425, 12, 14, 0, 24, ""], af: [400, 8, 10, 0, 10, ""], df: [350, 2, 3, 0, 8, ""] } }
+];
+
+/* ---------- logic ---------- */
+var COUNTLESS = { oz: 1, lb: 1, cup: 0, bag: 0, tray: 0 };
+function plural(p, n) {
+  if (p.u === "oz" || p.u === "lb") return p.u;
+  if (n === 1) return p.u;
+  if (p.plural) return p.plural;
+  if (/(y)$/.test(p.u) && !/ey$/.test(p.u)) return p.u.replace(/y$/, "ies");
+  if (/(ch|sh|s|x)$/.test(p.u)) return p.u + "es";
+  if (p.u === "half") return "halves";
+  return p.u + "s";
+}
+function countable(p) { return ["oz", "lb", "cup", "bag", "tray", "container", "pint", "tub", "sheet", "rack", "shell", "pack", "bowl"].indexOf(p.u) === -1; }
+
+function methodsFor(p) {
+  var m = {}, x = p.x || "";
+  Object.keys(p.m).forEach(function (k) { m[k] = p.m[k].slice(); });
+  if (m.ov && !m.cv && x.indexOf("cv") === -1) {
+    var o = m.ov;
+    m.cv = [o[0] - 25, o[1] * 0.8, o[2] * 0.8, o[3] * 0.8, o[4], (o[5] ? o[5] + " " : ""), true];
+  }
+  if (m.ov && !m.to && x.indexOf("to") === -1) {
+    var t = m.ov, cap = t[4] >= 3 ? Math.round(t[4] / 3) : t[4] / 2;
+    m.to = [t[0], t[1], t[2], t[3], cap, (t[5] ? t[5] + " " : ""), true];
+  }
+  return m;
+}
+
+function roundMin(x, fine) {
+  if (fine || x < 3) return Math.round(x * 12) / 12;
+  if (x >= 60) return Math.round(x / 5) * 5;
+  return Math.round(x);
+}
+function fmt1(x) {
+  if (x < 1) return Math.round(x * 60) + " sec";
+  if (x >= 60) { var h = Math.floor(x / 60), mm = Math.round(x - h * 60); return h + " h" + (mm ? " " + mm + " min" : ""); }
+  var m = Math.floor(x), s = Math.round((x - m) * 60 / 5) * 5;
+  if (s === 60) { m++; s = 0; }
+  return m + " min" + (s ? " " + s + " sec" : "");
+}
+function fmtRange(a, b) {
+  if (Math.abs(a - b) < 0.01) return fmt1(a);
+  if (a >= 1 && b < 60 && a % 1 === 0 && b % 1 === 0) return a + "–" + b + " min";
+  if (a >= 60 && a % 60 === 0 && b % 60 === 0) return a / 60 + "–" + b / 60 + " h";
+  if (a < 1 && b < 1) return Math.round(a * 60) + "–" + Math.round(b * 60) + " sec";
+  return fmt1(a) + " – " + fmt1(b);
+}
+function fmtQty(n) { return (Math.round(n * 100) / 100).toString(); }
+
+function compute(p, key, t, q, watts) {
+  var set = t[0], lo = t[1], hi = t[2], per = t[3], cap = t[4], q0 = p.q;
+  var racks = 1, batches = 1, each = q;
+  var isOven = key === "ov" || key === "cv";
+  if (cap && q > cap && key !== "tw") {
+    if (isOven) { racks = Math.min(2, Math.ceil(q / cap)); batches = Math.ceil(q / (cap * racks)); each = q / (batches * racks); }
+    else { batches = Math.ceil(q / cap); each = q / batches; }
+  }
+  function scale(x) { return Math.max(x * 0.4, x + per * (each - q0)); }
+  var a = scale(lo), b = scale(hi);
+  if (racks === 2) { a += 2; b += 3; }
+  var fine = key === "mw" || key === "tt";
+  if (key === "mw") { var f = 1100 / watts; a *= f; b *= f; }
+  a = roundMin(a, fine); b = roundMin(b, fine);
+  if (b < a) b = a;
+  var pre = PREHEAT[key] || 0;
+  var total = pre + b * batches;
+  return { set: set, a: a, b: b, racks: racks, batches: batches, each: each, total: total, pre: pre, note: t[5], derived: !!t[6] };
+}
+
+function settingLabel(key, set) {
+  if (typeof set === "number") return set + "°F";
+  return set;
+}
+
+function steps(p, key, r, q) {
+  var S = [], u = plural(p, Math.round(r.each)), cnt = countable(p);
+  var eachTxt = fmtQty(r.each) + " " + (cnt ? plural(p, r.each) : p.u);
+  var time = fmtRange(r.a, r.b);
+  var batchTxt = r.batches > 1 ? "Work in " + r.batches + " batches of about " + eachTxt + "." : "";
+  switch (key) {
+    case "mw":
+      S.push("Remove the outer box or wrapper.");
+      if (cnt && r.each > 1) S.push("Arrange " + eachTxt + " in a ring on a microwave-safe plate, not touching.");
+      if (batchTxt) S.push(batchTxt + " A crowded microwave heats unevenly.");
+      S.push("Microwave on " + r.set + " for " + time + (r.b >= 2 ? ", turning or stirring halfway." : "."));
+      if (r.note) S.push(r.note);
+      S.push("Let stand 1 minute before eating.");
+      break;
+    case "ov": case "cv": case "to":
+      S.push("Preheat " + (key === "to" ? "the toaster oven" : key === "cv" ? "the convection oven" : "the oven") + " to " + r.set + "°F.");
+      if (r.racks === 2) S.push("Split across 2 pans on the upper and lower thirds of the oven. Swap and rotate the pans halfway.");
+      if (r.batches > 1) S.push(batchTxt);
+      if (r.note) S.push(r.note);
+      if (key === "cv") S.push("Convection runs 25°F cooler and about 20% faster than the box's oven time, so start checking early.");
+      if (key === "to") S.push("Use the toaster oven tray at the same temperature. Check 2 min early since the element sits close to the food.");
+      S.push("Bake " + time + (r.racks === 2 ? " (includes extra time for the second pan)." : "."));
+      break;
+    case "af":
+      S.push("Preheat the air fryer to " + r.set + "°F for about 3 min.");
+      S.push(r.batches > 1 ? batchTxt + " Keep each batch in a single layer." : "Arrange in a single layer, not overlapping.");
+      S.push("Air fry " + time + ".");
+      if (r.note) S.push(r.note);
+      if (r.batches > 1) S.push("Later batches often finish 1–2 min sooner because the basket is already hot.");
+      break;
+    case "sk":
+      S.push("Heat a skillet over " + r.set.toLowerCase() + " heat.");
+      if (r.batches > 1) S.push(batchTxt + " An overfilled pan steams instead of browning.");
+      if (r.note) S.push(r.note);
+      S.push("Cook " + time + ".");
+      break;
+    case "bo":
+      S.push(r.set === "Boil" ? "Bring a large pot of water to a rolling boil." : "Bring to a gentle simmer over medium heat.");
+      if (r.batches > 1) S.push(batchTxt);
+      if (r.note) S.push(r.note);
+      S.push((r.set === "Boil" ? "Boil " : "Simmer ") + time + ".");
+      break;
+    case "st":
+      S.push("Bring 1–2 in. of water to a boil under a steamer basket.");
+      if (r.batches > 1) S.push(batchTxt);
+      if (r.note) S.push(r.note);
+      S.push("Steam, covered, " + time + ".");
+      break;
+    case "df":
+      S.push("Heat oil to " + r.set + "°F.");
+      S.push(r.batches > 1 ? batchTxt + " Crowding drops the oil temperature." : "Lower in carefully. Don't crowd the basket.");
+      S.push("Fry " + time + ", until golden.");
+      if (r.note) S.push(r.note);
+      S.push("Drain on paper towels.");
+      break;
+    case "tt":
+      S.push("Set the toaster to " + r.set.toLowerCase() + ".");
+      if (r.batches > 1) S.push("Toast in " + r.batches + " rounds of " + fmtQty(r.each) + " (based on a 2-slot toaster).");
+      S.push("Toast " + time + ".");
+      if (r.note) S.push(r.note);
+      break;
+    case "gr":
+      S.push("Preheat the grill to " + r.set.toLowerCase() + " and oil the grates.");
+      if (r.batches > 1) S.push(batchTxt);
+      if (r.note) S.push(r.note);
+      S.push("Grill " + time + ", turning once.");
+      break;
+    case "pc":
+      if (r.note) S.push(r.note);
+      if (r.batches > 1) S.push(batchTxt);
+      S.push("Seal and cook at " + r.set.toLowerCase() + " for " + time + ".");
+      S.push("Allow about 10–15 min extra for the pot to come to pressure.");
+      break;
+    case "sc":
+      if (r.note) S.push(r.note);
+      S.push("Cook on " + r.set + " for " + time + ".");
+      break;
+    case "tw":
+      S.push(r.set + ": " + time + ".");
+      if (r.note) S.push(r.note);
+      break;
+  }
+  return S;
+}
+
+var DONE = {
+  165: "Done at 165°F internal temperature.",
+  160: "Done at 160°F internal temperature.",
+  145: "Done at 145°F, when the flesh is opaque and flakes easily.",
+  140: "Done at 140°F, when the meat is opaque and white.",
+  rare: "Cook to taste. The center can stay rare if the package says sushi- or sashimi-grade."
+};
+
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+/* ---------- search ---------- */
+function norm(s) { return s.toLowerCase().replace(/[^a-z0-9& ]+/g, " "); }
+P.forEach(function (p, i) {
+  p.id = i;
+  p.w = p.w || "gn";
+  if (COSTCO.indexOf(p.n) > -1 && p.w.indexOf("c") === -1) p.w += "c";
+  p.s = p.s || (p.u === "oz" ? 2 : 1);
+  p.b = BRANDS[p.n] || "";
+  p._n = norm(p.n); p._k = norm(p.k + " " + p.c); p._b = norm(p.b);
+});
+function stem(t) { return t.length > 4 ? t.replace(/(es|s)$/, "") : t; }
+function score(p, toks) {
+  var sc = 0;
+  for (var i = 0; i < toks.length; i++) {
+    var t = toks[i], hit = 0;
+    if (p._n.indexOf(t) > -1) { hit = 3; if ((" " + p._n).indexOf(" " + t) > -1) hit += 2; }
+    else if (p._b.indexOf(t) > -1) hit = 2;
+    else if (p._k.indexOf(t) > -1) hit = 1;
+    if (!hit) return 0;
+    sc += hit;
+  }
+  return sc;
+}
+
+var $ = function (id) { return document.getElementById(id); };
+var state = { id: null, q: null, method: "", watts: 1100 };
+
+var cats = [];
+P.forEach(function (p) { if (cats.indexOf(p.c) === -1) cats.push(p.c); });
+$("cat").innerHTML = '<option value="">All aisles</option>' + cats.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join("");
+$("sub").textContent = "Look up any of " + P.length + " frozen foods from the grocery and drugstore freezer aisle, set how much you're making and how you're heating it, and get times scaled to that amount.";
+
+function filtered() {
+  var raw = norm($("q").value).trim();
+  var toks = raw ? raw.split(/\s+/).map(stem) : [];
+  var cat = $("cat").value, st = $("store").value;
+  var list = P.filter(function (p) { return (!cat || p.c === cat) && (!st || p.w.indexOf(st) > -1); });
+  if (toks.length) {
+    list = list.map(function (p) { return [p, score(p, toks)]; }).filter(function (x) { return x[1] > 0; })
+      .sort(function (a, b) { return b[1] - a[1] || a[0].n.localeCompare(b[0].n); }).map(function (x) { return x[0]; });
+  }
+  return list;
+}
+
+function renderList() {
+  var list = filtered();
+  $("clear").hidden = !$("q").value;
+  $("count").textContent = list.length + (list.length === 1 ? " item" : " items");
+  if (!list.length) {
+    $("results").innerHTML = '<li class="empty">Nothing matches. Try a shorter word like “chicken” or “fries”, or clear the aisle and store filters.</li>';
+    return list;
+  }
+  $("results").innerHTML = list.map(function (p) {
+    return '<li><button type="button" data-id="' + p.id + '"' + (p.id === state.id ? ' aria-current="true"' : '') + '><span class="rname">' + esc(p.n) + '<span class="rb">' + esc(p.b || "Mostly store brands") + '</span></span><span class="cat">' + esc(p.c) + '</span></button></li>';
+  }).join("");
+  return list;
+}
+
+function select(id, scroll) {
+  var p = P[id];
+  state.id = id; state.q = p.q;
+  renderList(); renderDetail();
+  if (scroll && window.matchMedia("(max-width: 860px)").matches) $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderDetail() {
+  var p = P[state.id];
+  if (!p) { $("detail").innerHTML = ""; return; }
+  var ms = methodsFor(p), keys = Object.keys(ms);
+  var opts = '<option value="">All methods for this item (' + keys.length + ')</option><optgroup label="Has times for this item">' +
+    METHODS.filter(function (m) { return ms[m[0]]; }).map(function (m) { return '<option value="' + m[0] + '">' + esc(m[1]) + '</option>'; }).join("") +
+    '</optgroup><optgroup label="Other methods">' +
+    METHODS.filter(function (m) { return !ms[m[0]]; }).map(function (m) { return '<option value="' + m[0] + '">' + esc(m[1]) + '</option>'; }).join("") + '</optgroup>';
+  var showW = (!state.method && ms.mw) || state.method === "mw";
+  var stores = p.w.split("").map(function (c) { return '<span class="tag">' + STORES[c] + '</span>'; }).join("");
+
+  var html = '<div class="ptitle"><h2>' + esc(p.n) + '</h2></div>' +
+    '<div class="tags"><span class="tag cat-tag">' + esc(p.c) + '</span>' + stores + '</div>' +
+    '<div class="brands"><span class="small">Brands to look for</span>' +
+      (p.b ? p.b.split(", ").map(function (b) { return '<span class="brand">' + esc(b) + '</span>'; }).join("") : '<span class="brand">Mostly store brands (Signature Select, 365, Sprouts, Kirkland Signature)</span>') +
+      '<span class="bnote">Times cover this type of product across brands. If your box gives different directions, follow the box.</span></div>' +
+    '<div class="controls">' +
+      '<div><label class="small" for="qty">How much</label><div class="qty">' +
+        '<button type="button" id="minus" aria-label="Less">−</button>' +
+        '<input id="qty" type="number" inputmode="decimal" min="' + p.s + '" step="' + p.s + '" value="' + fmtQty(state.q) + '">' +
+        '<button type="button" class="plus" id="plus" aria-label="More">+</button>' +
+        '<span class="unit" id="unitlbl">' + esc(plural(p, state.q)) + '</span></div>' +
+        '<div class="hint">Package times are usually for ' + fmtQty(p.q) + ' ' + esc(plural(p, p.q)) + '.</div></div>' +
+      '<div><label class="small" for="method">Cooking method (optional)</label><select id="method">' + opts + '</select></div>' +
+      '<div' + (showW ? '' : ' hidden') + '><label class="small" for="watts">Microwave power</label><select id="watts">' +
+        [700, 900, 1100, 1200].map(function (w) { return '<option value="' + w + '"' + (w === state.watts ? ' selected' : '') + '>' + w + ' W' + (w === 1100 ? ' (typical)' : '') + '</option>'; }).join("") +
+      '</select></div>' +
+    '</div>';
+
+  html += '<div id="out"></div>';
+  $("detail").innerHTML = html;
+  $("method").value = state.method;
+  renderOut();
+}
+
+function renderOut() {
+  var p = P[state.id], ms = methodsFor(p), keys = Object.keys(ms), html = "";
+  var show = keys;
+  if (state.method) {
+    if (ms[state.method]) show = [state.method];
+    else {
+      var reason = (p.no && p.no[state.method]) || "There are no typical package times for this item with this method, so it's not a tested way to cook it.";
+      html += '<div class="notice"><h3>' + esc(MNAME[state.method]) + ' isn\'t recommended for this item</h3><p>' + esc(reason) + '</p>' +
+        '<div class="alts">' + keys.map(function (k) { return '<button type="button" style="--mc:var(--m-' + k + ')" data-m="' + k + '">' + esc(MNAME[k]) + '</button>'; }).join("") + '</div></div>';
+      show = [];
+    }
+  }
+
+  html += '<div class="cards">' + show.map(function (k) {
+    var r = compute(p, k, ms[k], state.q, state.watts);
+    var chips = [];
+    if (r.batches > 1) chips.push(r.batches + " batches");
+    if (r.racks === 2) chips.push("2 pans");
+    if (k === "mw" && state.watts !== 1100) chips.push("adjusted for " + state.watts + " W");
+    if ((r.pre || r.batches > 1) && k !== "tw" && k !== "sc") chips.push("≈ " + fmt1(roundMin(r.total)) + " start to finish");
+    var done = p.d ? '<div class="done temp">' + DONE[p.d] + '</div>' : (k === "tw" ? '' : '<div class="done">Done when hot all the way through.</div>');
+    return '<article class="card" style="--mc:var(--m-' + k + ')"><div class="card-h"><h3>' + esc(MNAME[k]) + '</h3><span class="setting">' + esc(settingLabel(k, r.set)) + '</span></div>' +
+      '<div class="card-b"><div class="time"><strong>' + fmtRange(r.a, r.b) + '</strong><span>' + (r.batches > 1 ? 'per batch' : (k === "pc" ? 'at pressure' : 'cook time')) + '</span></div>' +
+      (chips.length ? '<div class="chips">' + chips.map(function (c, i) { return '<span class="chip' + (i === 0 && r.batches > 1 ? ' heat' : '') + '">' + esc(c) + '</span>'; }).join("") + '</div>' : '') +
+      '<ol class="steps">' + steps(p, k, r, state.q).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join("") + '</ol>' +
+      (r.derived ? '<div class="derived">Converted from the oven time.</div>' : '') + done + '</div></article>';
+  }).join("") + '</div>';
+
+  $("out").innerHTML = html;
+}
+
+/* ---------- events ---------- */
+$("q").addEventListener("input", renderList);
+$("q").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") { var l = filtered(); if (l.length) select(l[0].id, true); }
+});
+$("clear").addEventListener("click", function () { $("q").value = ""; renderList(); $("q").focus(); });
+$("cat").addEventListener("change", renderList);
+$("store").addEventListener("change", renderList);
+$("results").addEventListener("click", function (e) {
+  var b = e.target.closest("button[data-id]"); if (b) select(+b.dataset.id, true);
+});
+$("detail").addEventListener("click", function (e) {
+  var p = P[state.id]; if (!p) return;
+  if (e.target.id === "minus" || e.target.id === "plus") {
+    var d = e.target.id === "plus" ? p.s : -p.s;
+    state.q = Math.max(p.s, Math.round((state.q + d) * 100) / 100);
+    renderDetail();
+  }
+  var a = e.target.closest("button[data-m]");
+  if (a) { state.method = a.dataset.m; renderDetail(); }
+});
+$("detail").addEventListener("change", function (e) {
+  var p = P[state.id];
+  if (e.target.id === "qty") {
+    var v = parseFloat(e.target.value);
+    state.q = isFinite(v) && v > 0 ? v : p.q;
+    renderDetail(); $("qty").focus();
+  } else if (e.target.id === "method") { state.method = e.target.value; renderDetail(); $("method").focus(); }
+  else if (e.target.id === "watts") { state.watts = +e.target.value; renderDetail(); $("watts").focus(); }
+});
+$("detail").addEventListener("input", function (e) {
+  if (e.target.id === "qty") {
+    var v = parseFloat(e.target.value), p = P[state.id];
+    if (isFinite(v) && v > 0) {
+      state.q = v;
+      $("unitlbl").textContent = plural(p, v);
+      renderOut();
+    }
+  }
+});
+
+/* Start on a realistic example so the page shows what it does. */
+var start = P.findIndex(function (p) { return p.n.indexOf("Chicken nuggets") === 0; });
+state.q = 12;
+state.id = start;
+renderList();
+renderDetail();
+</script>
+
+</body>
+</html>
