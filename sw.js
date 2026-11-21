@@ -1,7 +1,7 @@
 /* Saves the app on the phone so it opens without a connection. Bump VERSION when files change. */
-const VERSION = "botb-v1";
+const VERSION = "botb-v2";
 const FILES = [
-  "./", "index.html", "manifest.webmanifest", "fonts/fonts.css",
+  "./", "index.html", "manifest.webmanifest", "data/products.json", "fonts/fonts.css",
   "fonts/archivo-normal-latin.woff2", "fonts/archivo-normal-latin-ext.woff2",
   "fonts/fraunces-normal-latin.woff2", "fonts/fraunces-normal-latin-ext.woff2",
   "fonts/fraunces-italic-latin.woff2", "fonts/fraunces-italic-latin-ext.woff2",

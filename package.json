@@ -1,7 +1,7 @@
 {
   "name": "back-of-the-box",
   "productName": "Back of the Box",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Frozen food cooking times, scaled to quantity and cooking method.",
   "author": "wckdby",
   "license": "UNLICENSED",
@@ -9,15 +9,29 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build:win": "electron-builder --win portable --x64"
+    "build:win": "electron-builder --win portable --x64",
+    "update-products": "node scripts/update-products.mjs"
   },
   "build": {
     "appId": "com.wckdby.backofthebox",
     "productName": "Back of the Box",
-    "files": ["main.js", "index.html", "fonts/**", "icons/**"],
-    "directories": { "output": "dist" },
-    "win": { "icon": "icons/icon-256.png", "target": "portable" },
-    "portable": { "artifactName": "BackOfTheBox-${version}-portable.exe" }
+    "files": [
+      "main.js",
+      "index.html",
+      "fonts/**",
+      "icons/**",
+      "data/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "icons/icon-256.png",
+      "target": "portable"
+    },
+    "portable": {
+      "artifactName": "BackOfTheBox-${version}-portable.exe"
+    }
   },
   "devDependencies": {
     "electron": "33.2.1",

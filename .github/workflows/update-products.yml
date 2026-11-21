@@ -1,0 +1,42 @@
+# Refreshes data/products.json from the Open Food Facts daily export every week.
+# GitHub Pages redeploys on the push, the phone app picks it up on next open,
+# and the Windows app downloads it at startup, so nobody has to do anything.
+name: Update brand-name products
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays, 09:00 UTC
+  workflow_dispatch: # also runnable from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-products
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build product list from Open Food Facts
+        run: node scripts/update-products.mjs
+
+      - name: Commit if the list changed
+        run: |
+          if git diff --quiet -- data/; then
+            echo "Product list unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "Update brand-name products from Open Food Facts"
+          git push

@@ -99,6 +99,19 @@ select { cursor: pointer; }
 .brands .small { width: 100%; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .brand { font-size: 13px; font-weight: 700; padding: 4px 11px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); border: 1px solid var(--line); }
 .bnote { width: 100%; font-size: 12px; color: var(--muted); }
+.bnote a, .foot a { color: var(--accent); }
+.status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 12px; color: var(--muted); margin-bottom: 12px; font-variant-numeric: tabular-nums; }
+.status button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 11px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--ink); }
+.status button:hover { border-color: var(--accent); color: var(--accent); }
+.bmark { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.results li button[aria-current="true"] .bmark { background: rgba(255,255,255,.2); color: inherit; }
+.bhead { display: flex; gap: 16px; align-items: center; }
+.bhead-t { min-width: 0; }
+.pimg { flex: none; width: 84px; height: 84px; object-fit: contain; background: #FFFFFF; border: 1px solid var(--line); border-radius: 14px; padding: 4px; }
+.pbrand { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.pqty { font-size: 13px; color: var(--muted); margin-top: 2px; }
+button.brand.basis { cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
+button.brand.basis:hover { border-color: var(--accent); color: var(--accent); }
 .empty { padding: 18px 8px; color: var(--muted); }
 
 .detail { min-width: 0; }
@@ -176,6 +189,7 @@ select { cursor: pointer; }
 
 <main class="wrap grid">
   <aside>
+    <div class="status" id="status"><span id="statusText">Loading brand-name products…</span> <button type="button" id="refresh" hidden>Refresh</button></div>
     <div class="filters">
       <div>
         <label class="small" for="cat">Aisle</label>
@@ -185,10 +199,6 @@ select { cursor: pointer; }
         <label class="small" for="store">Store</label>
         <select id="store">
           <option value="">All stores</option>
-          <option value="g">Safeway / Vons</option>
-          <option value="n">Whole Foods / Sprouts</option>
-          <option value="d">CVS / Walgreens</option>
-          <option value="c">Costco</option>
         </select>
       </div>
     </div>
@@ -202,6 +212,7 @@ select { cursor: pointer; }
 <footer class="wrap foot">
   <p>Times are typical ranges compiled from common package directions for each product type. Brands, package sizes and appliances differ, so start checking at the low end and follow your own package when it disagrees.</p>
   <p>Meat, poultry, seafood and egg items are done at the internal temperature shown on each card, checked with a food thermometer in the thickest part.</p>
+  <p>Brand-name products and store listings come from <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>, a free database built by volunteers, available under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">Open Database License</a>. The list refreshes automatically every week.</p>
 </footer>
 
 <script>
@@ -213,7 +224,12 @@ var METHODS = [
   ["sc", "Slow cooker"], ["tw", "Thaw / soften (no heat)"]
 ];
 var MNAME = {}; METHODS.forEach(function (m) { MNAME[m[0]] = m[1]; });
-var STORES = { g: "Safeway / Vons", n: "Whole Foods / Sprouts", d: "CVS / Walgreens", c: "Costco" };
+var STORES = { g: ["Safeway", "Vons"], n: ["Whole Foods", "Sprouts"], d: ["CVS", "Walgreens"], c: ["Costco"] };
+var STORE_KIND = { CVS: "Drugstores & convenience", Walgreens: "Drugstores & convenience", Costco: "Warehouse clubs" };
+var KIND_ORDER = ["Grocery", "Warehouse clubs", "Drugstores & convenience", "Online"];
+var DATA_URL = "https://wckdby.github.io/back-of-the-box/data/products.json";
+var IMG_BASE = "https://images.openfoodfacts.org/images/products/";
+var LIST_CAP = 200;
 /* Existing items Costco commonly stocks (often as bulk packs or Kirkland Signature). */
 var COSTCO = ["Thin-crust pizza (12 in.)", "Rising-crust pizza (12 in.)", "Pizza rolls", "Mini bagel pizzas", "Lasagna, family size (38–40 oz)",
   "Orange chicken", "Fried rice (bag)", "Lo mein / stir-fry noodles (bag)", "Indian curry meal", "Bean & cheese burrito", "Breakfast burrito",
@@ -896,6 +912,8 @@ P.forEach(function (p, i) {
   p.id = i;
   p.w = p.w || "gn";
   if (COSTCO.indexOf(p.n) > -1 && p.w.indexOf("c") === -1) p.w += "c";
+  p.st = [];
+  p.w.split("").forEach(function (c) { p.st = p.st.concat(STORES[c] || []); });
   p.s = p.s || (p.u === "oz" ? 2 : 1);
   p.b = BRANDS[p.n] || "";
   p._n = norm(p.n); p._k = norm(p.k + " " + p.c); p._b = norm(p.b);
@@ -917,46 +935,78 @@ function score(p, toks) {
 var $ = function (id) { return document.getElementById(id); };
 var state = { id: null, q: null, method: "", watts: 1100 };
 
+/* ITEMS = the product types above, plus brand-name products loaded from data/products.json.
+   A brand-name product inherits everything (cooking methods, units, safety temps) from its product type. */
+var ITEMS = P.slice();
+var BRANDED_COUNT = 0;
+var TYPE_BY_NAME = {}; P.forEach(function (p) { TYPE_BY_NAME[p.n] = p; });
+
 var cats = [];
 P.forEach(function (p) { if (cats.indexOf(p.c) === -1) cats.push(p.c); });
 $("cat").innerHTML = '<option value="">All aisles</option>' + cats.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join("");
-$("sub").textContent = "Look up any of " + P.length + " frozen foods from the grocery and drugstore freezer aisle, set how much you're making and how you're heating it, and get times scaled to that amount.";
+
+function setSub() {
+  $("sub").textContent = "Look up " + P.length + " kinds of frozen food" + (BRANDED_COUNT ? " and " + BRANDED_COUNT.toLocaleString() + " brand-name products" : "") +
+    " from grocery stores, warehouse clubs and drugstores. Set how much you're making and how you're heating it, and get times scaled to that amount.";
+}
+setSub();
+
+function buildStores(extra) {
+  var kinds = {}, seen = {};
+  function add(name, kind) { if (seen[name]) return; seen[name] = 1; (kinds[kind] = kinds[kind] || []).push(name); }
+  (extra || []).forEach(function (s) { add(s.name, s.kind); });
+  P.forEach(function (p) { p.st.forEach(function (s) { add(s, STORE_KIND[s] || "Grocery"); }); });
+  var cur = $("store").value;
+  $("store").innerHTML = '<option value="">All stores</option>' + KIND_ORDER.filter(function (k) { return kinds[k]; }).map(function (k) {
+    return '<optgroup label="' + esc(k) + '">' + kinds[k].sort().map(function (s) { return '<option>' + esc(s) + '</option>'; }).join("") + '</optgroup>';
+  }).join("");
+  $("store").value = seen[cur] ? cur : "";
+}
+buildStores();
 
 function filtered() {
   var raw = norm($("q").value).trim();
   var toks = raw ? raw.split(/\s+/).map(stem) : [];
   var cat = $("cat").value, st = $("store").value;
-  var list = P.filter(function (p) { return (!cat || p.c === cat) && (!st || p.w.indexOf(st) > -1); });
+  /* With no search and no store picked, list just the product types; brand-name products appear once you narrow down. */
+  var pool = toks.length || st ? ITEMS : P;
+  var list = pool.filter(function (p) { return (!cat || p.c === cat) && (!st || p.st.indexOf(st) > -1); });
   if (toks.length) {
     list = list.map(function (p) { return [p, score(p, toks)]; }).filter(function (x) { return x[1] > 0; })
-      .sort(function (a, b) { return b[1] - a[1] || a[0].n.localeCompare(b[0].n); }).map(function (x) { return x[0]; });
+      .sort(function (a, b) { return b[1] - a[1] || (a[0].branded ? 1 : 0) - (b[0].branded ? 1 : 0) || a[0].n.localeCompare(b[0].n); })
+      .map(function (x) { return x[0]; });
+  } else if (st) {
+    list.sort(function (a, b) { return (a.branded ? 1 : 0) - (b.branded ? 1 : 0); });
   }
   return list;
 }
 
 function renderList() {
-  var list = filtered();
+  var list = filtered(), noFilter = !norm($("q").value).trim() && !$("store").value;
   $("clear").hidden = !$("q").value;
-  $("count").textContent = list.length + (list.length === 1 ? " item" : " items");
+  $("count").textContent = list.length.toLocaleString() + (list.length === 1 ? " item" : " items") +
+    (noFilter && BRANDED_COUNT ? " · search or pick a store to include " + BRANDED_COUNT.toLocaleString() + " brand-name products" : "");
   if (!list.length) {
     $("results").innerHTML = '<li class="empty">Nothing matches. Try a shorter word like “chicken” or “fries”, or clear the aisle and store filters.</li>';
     return list;
   }
-  $("results").innerHTML = list.map(function (p) {
-    return '<li><button type="button" data-id="' + p.id + '"' + (p.id === state.id ? ' aria-current="true"' : '') + '><span class="rname">' + esc(p.n) + '<span class="rb">' + esc(p.b || "Mostly store brands") + '</span></span><span class="cat">' + esc(p.c) + '</span></button></li>';
-  }).join("");
+  $("results").innerHTML = list.slice(0, LIST_CAP).map(function (p) {
+    var sub = p.branded ? p.b + (p.qty ? " · " + p.qty : "") : (p.b || "Mostly store brands");
+    return '<li><button type="button" data-id="' + p.id + '"' + (p.id === state.id ? ' aria-current="true"' : '') + '><span class="rname">' + esc(p.n) +
+      '<span class="rb">' + esc(sub) + '</span></span><span class="cat">' + (p.branded ? '<span class="bmark">Brand</span>' : esc(p.c)) + '</span></button></li>';
+  }).join("") + (list.length > LIST_CAP ? '<li class="empty">Showing the first ' + LIST_CAP + ' of ' + list.length.toLocaleString() + '. Add words to narrow it down.</li>' : '');
   return list;
 }
 
 function select(id, scroll) {
-  var p = P[id];
+  var p = ITEMS[id];
   state.id = id; state.q = p.q;
   renderList(); renderDetail();
   if (scroll && window.matchMedia("(max-width: 860px)").matches) $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderDetail() {
-  var p = P[state.id];
+  var p = ITEMS[state.id];
   if (!p) { $("detail").innerHTML = ""; return; }
   var ms = methodsFor(p), keys = Object.keys(ms);
   var opts = '<option value="">All methods for this item (' + keys.length + ')</option><optgroup label="Has times for this item">' +
@@ -964,13 +1014,28 @@ function renderDetail() {
     '</optgroup><optgroup label="Other methods">' +
     METHODS.filter(function (m) { return !ms[m[0]]; }).map(function (m) { return '<option value="' + m[0] + '">' + esc(m[1]) + '</option>'; }).join("") + '</optgroup>';
   var showW = (!state.method && ms.mw) || state.method === "mw";
-  var stores = p.w.split("").map(function (c) { return '<span class="tag">' + STORES[c] + '</span>'; }).join("");
+  var shown = p.st.slice(0, 10);
+  var stores = shown.map(function (s) { return '<span class="tag">' + esc(s) + '</span>'; }).join("") +
+    (p.st.length > shown.length ? '<span class="tag">+' + (p.st.length - shown.length) + ' more</span>' : '') +
+    (p.branded && !p.st.length ? '<span class="tag">Store not recorded · national brands are sold at most grocery stores</span>' : '');
 
-  var html = '<div class="ptitle"><h2>' + esc(p.n) + '</h2></div>' +
-    '<div class="tags"><span class="tag cat-tag">' + esc(p.c) + '</span>' + stores + '</div>' +
-    '<div class="brands"><span class="small">Brands to look for</span>' +
-      (p.b ? p.b.split(", ").map(function (b) { return '<span class="brand">' + esc(b) + '</span>'; }).join("") : '<span class="brand">Mostly store brands (Signature Select, 365, Sprouts, Kirkland Signature)</span>') +
-      '<span class="bnote">Times cover this type of product across brands. If your box gives different directions, follow the box.</span></div>' +
+  var html;
+  if (p.branded) {
+    html = '<div class="bhead">' + (p.img ? '<img class="pimg" src="' + esc(IMG_BASE + p.img) + '" alt="' + esc(p.b + ' ' + p.n) + ' package" loading="lazy">' : '') +
+      '<div class="bhead-t"><div class="pbrand">' + esc(p.b) + '</div><div class="ptitle"><h2>' + esc(p.n) + '</h2></div>' +
+      (p.qty ? '<div class="pqty">' + esc(p.qty) + '</div>' : '') + '</div></div>' +
+      '<div class="tags"><span class="tag cat-tag">' + esc(p.c) + '</span>' + stores + '</div>' +
+      '<div class="brands"><span class="small">Cooking times from</span><button type="button" class="brand basis" data-id="' + p.base.id + '">' + esc(p.base.n) + '</button>' +
+        '<span class="bnote">The database doesn\'t include each brand\'s own directions, so these are typical times for this type of product. If your box gives different directions, follow the box. ' +
+        '<a href="https://world.openfoodfacts.org/product/' + encodeURIComponent(p.code) + '" target="_blank" rel="noopener">See this product on Open Food Facts</a></span></div>';
+  } else {
+    html = '<div class="ptitle"><h2>' + esc(p.n) + '</h2></div>' +
+      '<div class="tags"><span class="tag cat-tag">' + esc(p.c) + '</span>' + stores + '</div>' +
+      '<div class="brands"><span class="small">Brands to look for</span>' +
+        (p.b ? p.b.split(", ").map(function (b) { return '<span class="brand">' + esc(b) + '</span>'; }).join("") : '<span class="brand">Mostly store brands (Signature Select, 365, Sprouts, Kirkland Signature)</span>') +
+        '<span class="bnote">Times cover this type of product across brands. Search a brand name to find its exact products. If your box gives different directions, follow the box.</span></div>';
+  }
+  html +=
     '<div class="controls">' +
       '<div><label class="small" for="qty">How much</label><div class="qty">' +
         '<button type="button" id="minus" aria-label="Less">−</button>' +
@@ -991,7 +1056,7 @@ function renderDetail() {
 }
 
 function renderOut() {
-  var p = P[state.id], ms = methodsFor(p), keys = Object.keys(ms), html = "";
+  var p = ITEMS[state.id], ms = methodsFor(p), keys = Object.keys(ms), html = "";
   var show = keys;
   if (state.method) {
     if (ms[state.method]) show = [state.method];
@@ -1033,7 +1098,9 @@ $("results").addEventListener("click", function (e) {
   var b = e.target.closest("button[data-id]"); if (b) select(+b.dataset.id, true);
 });
 $("detail").addEventListener("click", function (e) {
-  var p = P[state.id]; if (!p) return;
+  var p = ITEMS[state.id]; if (!p) return;
+  var basis = e.target.closest("button.basis");
+  if (basis) { select(+basis.dataset.id, false); return; }
   if (e.target.id === "minus" || e.target.id === "plus") {
     var d = e.target.id === "plus" ? p.s : -p.s;
     state.q = Math.max(p.s, Math.round((state.q + d) * 100) / 100);
@@ -1043,7 +1110,7 @@ $("detail").addEventListener("click", function (e) {
   if (a) { state.method = a.dataset.m; renderDetail(); }
 });
 $("detail").addEventListener("change", function (e) {
-  var p = P[state.id];
+  var p = ITEMS[state.id];
   if (e.target.id === "qty") {
     var v = parseFloat(e.target.value);
     state.q = isFinite(v) && v > 0 ? v : p.q;
@@ -1053,7 +1120,7 @@ $("detail").addEventListener("change", function (e) {
 });
 $("detail").addEventListener("input", function (e) {
   if (e.target.id === "qty") {
-    var v = parseFloat(e.target.value), p = P[state.id];
+    var v = parseFloat(e.target.value), p = ITEMS[state.id];
     if (isFinite(v) && v > 0) {
       state.q = v;
       $("unitlbl").textContent = plural(p, v);
@@ -1068,6 +1135,66 @@ state.q = 12;
 state.id = start;
 renderList();
 renderDetail();
+
+/* ---------- brand-name products (refreshed weekly by a GitHub Action; see scripts/update-products.mjs) ---------- */
+function setStatus(text, canRefresh) {
+  $("statusText").textContent = text;
+  $("refresh").hidden = !canRefresh;
+}
+
+function applyProducts(d) {
+  var curCode = ITEMS[state.id] && ITEMS[state.id].code;
+  var branded = [];
+  d.items.forEach(function (it) {
+    var base = TYPE_BY_NAME[d.types[it[3]]];
+    if (!base) return;
+    var p = Object.create(base);
+    p.id = P.length + branded.length;
+    p.branded = true; p.base = base;
+    p.code = it[0]; p.b = it[1]; p.n = it[2];
+    p.st = it[4].map(function (i) { return d.stores[i].name; });
+    p.qty = it[5]; p.img = it[6];
+    p._n = norm(p.n); p._b = norm(p.b);
+    branded.push(p);
+  });
+  ITEMS = P.concat(branded);
+  BRANDED_COUNT = branded.length;
+  buildStores(d.stores);
+  setSub();
+  if (curCode) {
+    var again = branded.filter(function (p) { return p.code === curCode; })[0];
+    state.id = again ? again.id : state.id < P.length ? state.id : 0;
+  }
+  renderList();
+  renderDetail();
+  var when = new Date(d.updated);
+  setStatus(BRANDED_COUNT.toLocaleString() + " brand-name products · updated " +
+    when.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }), true);
+}
+
+function bundledProducts() {
+  if (window.BOTB_PRODUCTS) return Promise.resolve(window.BOTB_PRODUCTS);
+  return new Promise(function (resolve, reject) {
+    var s = document.createElement("script");
+    s.src = "data/products.js";
+    s.onload = function () { window.BOTB_PRODUCTS ? resolve(window.BOTB_PRODUCTS) : reject(); };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function loadProducts(force) {
+  var url = location.protocol.indexOf("http") === 0 ? "data/products.json" : DATA_URL;
+  setStatus("Checking for the latest brand-name products…", false);
+  fetch(url, { cache: force ? "reload" : "no-cache" })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .catch(function () { return bundledProducts(); })
+    .then(applyProducts)
+    .catch(function () { setStatus("Brand-name products couldn't load. Check your connection and try again.", true); });
+}
+
+$("refresh").addEventListener("click", function () { loadProducts(true); });
+loadProducts(false);
 </script>
 
 <script>

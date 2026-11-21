@@ -8,6 +8,18 @@ A searchable guide to frozen foods from grocery stores (Safeway, Vons, Whole Foo
 
 Times are typical ranges for each type of product. If your package gives different directions, follow the package.
 
+## Brand-name products update themselves
+
+About 11,000 brand-name frozen products, and the stores that carry them, come from [Open Food Facts](https://world.openfoodfacts.org).
+Every Monday a GitHub Action ([update-products.yml](.github/workflows/update-products.yml)) downloads the Open Food Facts daily export,
+keeps US frozen foods, matches each product to one of the app's product types for cooking times, and commits `data/products.json` if anything changed.
+
+- The website and phone app pick up the new list automatically.
+- The Windows app downloads the latest list each time it starts, and falls back to its built-in copy when offline.
+- To update right away: GitHub → **Actions** → **Update brand-name products** → **Run workflow**, or run `npm run update-products` locally.
+
+Product data is © Open Food Facts contributors, licensed under the ODbL (see [data/LICENSE.md](data/LICENSE.md)).
+
 ## Use it
 
 - **Web / phone:** https://wckdby.github.io/back-of-the-box/
