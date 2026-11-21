@@ -5,9 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Searchable cooking times for frozen foods from grocery stores, Costco and drugstores, scaled to quantity and cooking method.">
 <title>Back of the Box</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Fraunces:ital,opsz,wght@0,9..144,600..900;1,9..144,600..900&display=swap">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#B3121D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Back of the Box">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 /* Layout: search rail on the left, "back of the package" instruction panels on the right; stacks on phones.
    Look: retro stand-mixer. Glossy enamel red, porcelain countertop, brushed-chrome trim; each method is an enamel finish. */
@@ -1064,5 +1070,11 @@ renderList();
 renderDetail();
 </script>
 
+<script>
+/* Offline support for the installed phone app (skipped in the desktop app, which loads from disk). */
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js"); });
+}
+</script>
 </body>
 </html>

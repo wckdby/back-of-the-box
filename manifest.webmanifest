@@ -1,0 +1,16 @@
+{
+  "name": "Back of the Box",
+  "short_name": "Back of Box",
+  "description": "Frozen food cooking times, scaled to how much you're making and how you're heating it.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F3EEE6",
+  "theme_color": "#B3121D",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
